@@ -1,0 +1,7 @@
+default_layout "claude"
+default_shell "/bin/bash"
+keybinds {
+    normal {
+        bind "Ctrl f" { ToggleFloatingPanes; }
+    }
+}

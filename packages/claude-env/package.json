@@ -1,0 +1,15 @@
+{
+  "name": "claude-env",
+  "version": "0.1.0",
+  "description": "Zellij + yazi + zjstatus environment for Claude Code containers",
+  "bin": {
+    "claude-env": "bin/claude-env.js"
+  },
+  "files": [
+    "bin/",
+    "assets/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

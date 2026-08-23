@@ -1,0 +1,15 @@
+# 大容量PDF(サイズが大きいためpushしない)
+業種別審査辞典_第5版/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Env
+.env
+.env.local
