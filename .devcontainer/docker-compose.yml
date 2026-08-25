@@ -7,8 +7,8 @@ name: stock
 services:
   node:
     build:
-      context: ../..
-      dockerfile: stock/.devcontainer/Dockerfile
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
     user: node
     container_name: stock
     volumes:
