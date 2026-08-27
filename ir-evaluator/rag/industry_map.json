@@ -1,0 +1,14 @@
+{
+  "_schema_version": 1,
+  "_description": "業種キー → 審査辞典(第5版)の巻/章 → Chromaコレクション名。industry_key は審査辞典の巻/章立てに準拠する。",
+  "_status": "PENDING: 辞典JSON復帰後に entries を投入する。下記 _example は投入時の形。",
+  "_example": {
+    "industry_key": "乳製品・食品製造業",
+    "dictionary_volume": 1,
+    "dictionary_chapter": "食料品/乳製品",
+    "chroma_collection": "shinsa_v01_dairy",
+    "tse33": "食料品",
+    "match_keywords": ["乳", "乳製品", "アイスクリーム", "チーズ", "飲料", "食品"]
+  },
+  "entries": []
+}
