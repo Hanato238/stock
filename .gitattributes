@@ -1,0 +1,15 @@
+# このリポジトリは Linux / WSL devcontainer 前提。
+# 全テキストファイルをリポジトリ内・チェックアウト時ともに LF に固定する
+# （Windows 側エディタ等による CRLF 混入を防ぐ）。
+* text=auto eol=lf
+
+# 明示（シェルスクリプト・実行系は特に LF 必須）
+*.sh    text eol=lf
+*.py    text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.toml  text eol=lf
+*.kdl   text eol=lf
+*.lock  text eol=lf
+Dockerfile text eol=lf
