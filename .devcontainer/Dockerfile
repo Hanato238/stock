@@ -1,7 +1,7 @@
 FROM node:22-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    procps curl ca-certificates jq git unzip ncurses-term \
+    procps curl ca-certificates gnupg jq git unzip ncurses-term \
     && rm -rf /var/lib/apt/lists/*
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 SHELL=/bin/bash
@@ -25,6 +25,15 @@ RUN curl -fsSL https://antigravity.google/cli/install.sh | bash \
 
 # gws (Google Workspace CLI)
 RUN npm install -g @googleworkspace/cli
+
+# Google Cloud SDK (gcloud)
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+      > /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+      | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends google-cloud-cli \
+    && rm -rf /var/lib/apt/lists/*
 
 # notebooklm-mcp-cli (uv tool) - redirect the install to a shared location
 # instead of root's home, same reasoning as ubuntu/remote-agy/setup.sh

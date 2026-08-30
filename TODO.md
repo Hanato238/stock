@@ -42,6 +42,7 @@
 - [x] **全1600項目の本番実行 completed（2026-08-24）** — Gemini Batch APIに作り直して実行（コスト半減のため）。結果: 1600/1600項目インデックス済み、chunk総数51,331、エラー0件。検索精度も確認済み。
   - バッチ実行では1件（`4044_マンホール蓋製造業`）が空文書でスキップされたが、Standard API版パイプラインで個別に再OCR・再格納し解消（2026-08-25）。
 - [~] 企業プロファイル→辞典コレクション解決層のスカフォールド（`rag/industry_map.json`, `rag/mapping.py` — c088833側で追加。単一コレクション+メタデータフィルタ方式に合わせた entries 投入は今後）
+- [x] **Chroma DB のデバイス間共有（2026-08-30）** — 非公開 GCS バケットを正本にして `scripts/chroma_sync.py`（`gcloud storage rsync` ラッパー、`make chroma-pull/push/status`）で同期。手順は `docs/chroma-sync.md`。`chromadb==1.5.9` に固定（永続インデックス形式がバージョン依存のため）。バックアップ用に `scripts/chroma_export.py` / `chroma_import.py`（npz+jsonl.gz、chromadbバージョン非依存）も追加。将来 GCP VM 常時稼働後は Chroma サーバモード（`chroma run`+`HttpClient`）へ移行予定。
 
 > 実行方式メモ（2026-08-24）: 本番投入直前にコスト試算（Standard API見積 約$45〜50）を提示したところ、結果は急がなくてよいとのことでBatch API（半額、約$25）に作り直した。
 > - `dictionary/build_index_batch.py`（新規）: PDFをFiles APIにアップロード→OCRバッチジョブ（`InlinedRequest`、metadataのcodeで対応付け）→チャンク分割→Embeddingバッチジョブ（`EmbeddingsBatchJobSource`は1ジョブ=1リクエストで複数テキストをcontentsにまとめる、レスポンスはテキスト数と同数返るのでリスト順で対応付け）→Chroma格納、という流れ。`--batch-size`（デフォルト200）で区切り、区切りごとに確定即Chroma格納するため、途中で止めても再開できる。

@@ -20,5 +20,11 @@ node_modules/
 ir-evaluator/data/ir/
 ir-evaluator/chroma_db/
 
+# Chroma DB のポータブルダンプ（scripts/chroma_export.py, make chroma-backup）
+chroma_dump.npz
+chroma_dump.jsonl.gz
+chroma_dump.manifest.json
+ir-evaluator/chroma_backups/
+
 # uv lockfile（再生成可能）
 ir-evaluator/uv.lock
