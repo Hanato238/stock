@@ -14,10 +14,18 @@ dependencies = [
 ]
 
 [project.scripts]
-evaluate = "ir_evaluator.cli:main"
+evaluate = "evaluation.cli:main"
+
+[project.optional-dependencies]
+# 評価に Gemini 以外を使う場合のみ導入する（`uv sync --extra anthropic` 等）。
+anthropic = ["anthropic>=0.40.0"]
+openai = ["openai>=1.40.0"]
 
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
     "ruff>=0.5.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

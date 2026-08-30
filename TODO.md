@@ -43,6 +43,7 @@
   - バッチ実行では1件（`4044_マンホール蓋製造業`）が空文書でスキップされたが、Standard API版パイプラインで個別に再OCR・再格納し解消（2026-08-25）。
 - [~] 企業プロファイル→辞典コレクション解決層のスカフォールド（`rag/industry_map.json`, `rag/mapping.py` — c088833側で追加。単一コレクション+メタデータフィルタ方式に合わせた entries 投入は今後）
 - [x] **Chroma DB のデバイス間共有（2026-08-30）** — 非公開 GCS バケットを正本にして `scripts/chroma_sync.py`（`gcloud storage rsync` ラッパー、`make chroma-pull/push/status`）で同期。手順は `docs/chroma-sync.md`。`chromadb==1.5.9` に固定（永続インデックス形式がバージョン依存のため）。バックアップ用に `scripts/chroma_export.py` / `chroma_import.py`（npz+jsonl.gz、chromadbバージョン非依存）も追加。将来 GCP VM 常時稼働後は Chroma サーバモード（`chroma run`+`HttpClient`）へ移行予定。
+  - **初回 GCS アップロード完了（2026-08-30）** — 本番インデックス済み `chroma_db/`（1600項目・chunk 51,331件）を正本バケットへ push 済み。以降は他デバイスから `make chroma-pull` で取得可能。
 
 > 実行方式メモ（2026-08-24）: 本番投入直前にコスト試算（Standard API見積 約$45〜50）を提示したところ、結果は急がなくてよいとのことでBatch API（半額、約$25）に作り直した。
 > - `dictionary/build_index_batch.py`（新規）: PDFをFiles APIにアップロード→OCRバッチジョブ（`InlinedRequest`、metadataのcodeで対応付け）→チャンク分割→Embeddingバッチジョブ（`EmbeddingsBatchJobSource`は1ジョブ=1リクエストで複数テキストをcontentsにまとめる、レスポンスはテキスト数と同数返るのでリスト順で対応付け）→Chroma格納、という流れ。`--batch-size`（デフォルト200）で区切り、区切りごとに確定即Chroma格納するため、途中で止めても再開できる。
@@ -72,15 +73,50 @@
 
 ## Phase 4: 評価エンジン
 
-- [ ] 2段階RAG検索実装
-  - [ ] 企業業種 → 対応ChromaコレクションをJSONで特定
-  - [ ] IRテキスト × 審査辞典チャンクの関連検索
-- [ ] Gemini評価プロンプト設計
-  - [ ] リスク評点（財務・事業・経営）
-  - [ ] 要注意項目リスト
-  - [ ] 投資適格性コメント
-- [ ] Markdownレポート生成
-- [ ] Google Driveへの保存（Drive API）
+> 実装メモ（2026-08-30）: `evaluation/` パッケージ新設。
+> - LLM を provider 非依存化（`evaluation/llm.py`）。モデル名でプロバイダ自動判定
+>   （`gemini-*`→Gemini / `claude-*`→Anthropic / `gpt-*`→OpenAI）。既定は `EVAL_MODEL`
+>   （未設定なら `gemini-3.1-pro-preview`。`gemini-2.5-pro` は新規ユーザー提供終了で 404）。
+>   anthropic/openai SDK は optional-dependencies で任意導入。SDK 固有例外は `LLMError` に正規化。
+> - リスク評点の向き = **1 低リスク / 5 高リスク**（要注意項目と向きを揃える）。
+> - Drive 保存は Phase 1（OAuth）完了まで見送り。レポートはローカル `data/reports/` のみ。
+> - `pyproject.toml` の `[project.scripts]` を `ir_evaluator.cli`（未存在）→ `evaluation.cli` に修正。
+
+> ライブ実行の知見（2026-08-30、森永乳業で準ライブ実行＝EDINET取得のみバイパス）:
+> - **この環境の `.env` の EDINET_API_KEY はプレースホルダー**（実キー未反映。EDINET は 200 で
+>   `{"StatusCode":401}` を返すため `raise_for_status()` を素通りし「見つかりません」になる）。
+>   → `edinet/client.py` に body 内 StatusCode のチェックを足すと親切（未対応）。
+> - **業種判定は LLM 抽出が必須**（`evaluation/classify.py` 新設）。有報【事業の内容】冒頭は
+>   「当社グループは、〜子会社・関連会社で構成され」の定型文で業種語が埋もれ、正規表現では
+>   安定しない。審査辞典は業種別の財務指標テーブルが大半で、散文より「◯◯製造業」名詞句クエリ
+>   が効く。軽量モデル（`INDUSTRY_MODEL`、既定 `gemini-flash-latest`）で業種名を 5 個抽出 →
+>   retrieval の主クエリに。**Gemini 3 系は thinking 既定 on で、出力上限が小さいと思考トークンを
+>   使い切って空応答**になる → `llm.generate_json(light=True)` で thinking off にして回避。
+> - 効果: 森永乳業で retrieval 距離 0.48（無関係）→ **0.33〜0.40（乳製品製造業[1039]・処理牛乳
+>   乳飲料製造業[1038]・アイスクリームショップ 等）**。評価文が辞典を引用（「[1039]は固定比率
+>   200%超で借入依存が高い傾向」等）、マクロ（円安162円・政策金利0.84%）も反映。
+
+- [x] 2段階RAG検索実装（`evaluation/retrieval.py` + `evaluation/classify.py`）
+  - [x] 企業業種 → 審査辞典メタデータフィルタ解決（`resolve_filter()`。`rag.mapping.resolve()`
+        が None の間はフィルタなし＝単一コレクション全体を検索。entries 投入後に効く）
+  - [x] 業種ターム LLM 抽出 → 名詞句クエリ＋与信観点クエリ＋有報のリスク/MD&A チャンク →
+        ベクトル検索 → 同一項目 3 件までに絞り距離順（`_MAX_PER_CODE`）
+  - [x] 実DB検証（森永乳業）: 上位が乳製品製造業・処理牛乳乳飲料製造業に一致、距離 0.33〜0.40
+- [x] 評価プロンプト設計（`evaluation/prompt.py`、`schema.py`）
+  - マクロ環境ブロック（`macro.context`）を冒頭に前置 → 企業プロファイル → 辞典知見（出典コード付き）
+    → 有報要点 → 出力スキーマ、の順で組み立て
+  - [x] リスク評点（財務・事業・経営、1〜5）／要注意項目（高中低）／投資適格性コメント
+  - [x] 総合判定（適格/条件付き適格/要精査/非適格）
+  - [x] LLM 出力 JSON の寛容パース（コードフェンス除去・括弧対応抽出・欠損補完・判定語の正規化）
+- [x] Markdownレポート生成（`evaluation/report.py`。業種判定・リスク評点表・要注意項目・マクロ前提・
+      参照辞典チャンク付録・金商法ディスクレーマ）
+- [x] CLI（`evaluation/cli.py`。`--pdf --fiscal-period` / `--company --from --to`、`--model` `--industry-model`）
+- [x] ユニットテスト 42 件（schema/llm/prompt/report/retrieval/classify。`tests/`、ruff 通過）
+- [x] **準ライブ end-to-end 実行**（森永乳業。RAG＝実Chroma・評価＝実Gemini 3.1-pro。EDINET のみ手入力バイパス）
+- [ ] 完全ライブ実行（EDINET 実キー投入後に `evaluation.cli --company` で通す）
+- [ ] 追加チューニング: 有報のリスク/MD&A 散文クエリはノイズ寄り（辞典は表主体）。重み下げ or 除外を検討
+- [ ] 別モデル比較（`--model claude-opus-5` 等。要 `uv sync --extra anthropic`）
+- [ ] Google Driveへの保存（Drive API）← Phase 1 の OAuth 設定待ち
 
 ## Phase 5: nanoclaw統合
 
@@ -120,6 +156,8 @@
 ---
 
 ## 進捗サマリー（2026-08-27 時点）
+
+> ⚠️ 最新版は本ファイル末尾の **「進捗サマリー（2026-08-30 時点）」** を参照。以下は履歴として残置。
 
 ### ここまでの推移
 
@@ -165,3 +203,68 @@
 ### 既知のブロッカー / 依存
 - Phase 4のマクロ配線（context.py前置）は依存なしで即着手可
 - 業種別DI/IIP配線は industry_map の entries 投入待ち
+
+---
+
+## 進捗サマリー（2026-08-30 時点）
+
+### 08-27 以降にやったこと
+
+**Chroma DB のデバイス間共有インフラを構築（Phase 2 の運用課題）**
+- 複数デバイス（Windows/WSL 混在）で同一の本番インデックスを使うため、非公開 GCS バケットを正本にする方式を採用。
+- `scripts/chroma_sync.py`（標準ライブラリのみ・`gcloud storage rsync` ラッパー）+ `Makefile` で `make chroma-pull / chroma-push / chroma-status`。
+- `scripts/chroma_export.py` / `chroma_import.py` … chromadb バージョン非依存のポータブルダンプ（npz + jsonl.gz + manifest）。Google Drive 退避用に `make chroma-backup`。
+- `chromadb==1.5.9` に厳密固定（永続インデックス形式がバージョン依存で、ズレると別デバイスで読めなくなるため）。
+- 手順書 `ir-evaluator/docs/chroma-sync.md`。
+- **✅ 初回 GCS アップロード完了** — 本番インデックス済み `chroma_db/`（1600項目・chunk 51,331）を正本バケットへ push 済み。他デバイスは `make chroma-pull` で取得できる状態。
+- 将来 GCP VM 常時稼働後は Chroma サーバモード（`chroma run` + `HttpClient`）へ移行予定。
+
+**リポジトリ整備**
+- 作業ツリー全体が CRLF 化して全ファイル modified 表示になっていた問題を、`.gitattributes`（`* text=auto eol=lf`）を追加して解消。既存ファイルを LF へ renormalize（内容変更なし）。
+- `.claude/settings.local.json`（マシンローカル設定）を `.gitignore` に追加。
+
+### 現在地（フェーズ別ステータス）
+
+| Phase | 状態 | 補足 |
+|---|---|---|
+| Phase 1: インフラ | ⏳ ほぼ未着手 | EDINET登録・Python環境のみ完了。GCP VM / Vertex AI / Drive OAuth / nanoclaw が残 |
+| Phase 2: 審査辞典RAG化 | ✅ 完了 | 全1600項目インデックス済み・GCS 正本化済み。残タスクは entries 投入（下記 項目2）のみ |
+| Phase 3: EDINET取得 | ✅ ほぼ完了 | 取得〜テキスト抽出〜業種材料抽出まで検証済み。業種分類キー確定は entries 投入待ち |
+| Phase 4: 評価エンジン | 🟢 準ライブ実行OK | `evaluation/` 一式（業種判定/2段階RAG/プロンプト/LLM層/レポート/CLI）実装・42テスト・森永乳業で準ライブ検証済み。EDINET 実キー投入で完全ライブ／散文クエリのチューニングが残 |
+| Phase 4.5: マクロ経済 | 🟡 全体系＋Phase4配線済み | 全体系4指標取得済み＋`macro.context` を評価プロンプト冒頭に前置（1a 完了・実出力で反映確認）。業種別DI/IIP が残 |
+| Phase 5: nanoclaw統合 | ⬜ 未着手 | Phase 4 完了後 |
+| Phase 6: 精度改善・運用 | ⬜ 未着手 | |
+
+### これから行うべきこと（優先順）
+
+0. **git push** — `08cb929`（.gitattributes）＋ Phase 4 実装コミットが未 push。
+
+1. **Phase 4 の完全ライブ化と精度チューニング** — 準ライブ（森永乳業）まで完了
+   - **1a〜1d.** ✅ 完了: マクロ前置 / 2段階RAG＋業種判定 / プロンプト・スキーマ / Markdown レポート
+   - **1e.** ⬜ **次**: EDINET 実キーを `.env` に入れて `uv run python -m evaluation.cli --company 森永乳業
+     --from 2025-06-01 --to 2025-06-30` を通し、実有報テキストでの抽出（事業等のリスク/MD&A の見出し
+     ヒット率）と出力品質を確認
+   - **1f.** ⬜ チューニング: 散文クエリ（有報リスク/MD&A）は辞典（表主体）に対してノイズ寄り。
+     重み下げ／除外、`n_evidence` と truncate 上限、業種タームの絞り方を調整
+   - **1g.** ⬜ 別モデル比較（`--model claude-opus-5` / `gpt-*`。要 optional-deps とキー）
+
+2. **rag/ と dictionary/ の整合（1b の精度向上）** — `rag/industry_map.json` の `entries` が空
+   （`_status: PENDING`）かつ `_example` が旧「業種別コレクション」前提のまま。単一コレクション +
+   メタデータフィルタ方式へスキーマごと作り直し、`dictionary/manifest.py` の巻/分野/章と
+   突き合わせて投入。→ `resolve_filter()` が実際に効くようになり RAG の precision が上がる。
+   Phase 3 の「業種分類キー確定」もこれで閉じる。
+
+3. **業種別DI/IIP追加（補助A）** — `industry_key` と配線して業種相対の基準線を成立。IIPは製造業・鉱業のみ（非製造業は第3次産業活動指数）。短観業種区分 → 辞典巻/章のマッピングが必要。項目2の entries に依存。
+
+4. **Phase 1: インフラ（GCP VM / Vertex AI / Drive OAuth / nanoclaw）** — Phase 4 が動いてから
+
+5. **運用**：マクロ更新を手動 → Phase 5 で cron/Scheduler 昇格、レポート HTML 化 + Vercel 配信
+
+### 既知のブロッカー / 依存
+- **1e（完全ライブ）は EDINET 実キー待ち** — この環境の `.env` はプレースホルダー。実キーを入れれば即実行可
+  （API 課金: EDINET 無料 + 業種判定 flash 数円 + 評価 gemini-3.1-pro 1 社あたり十数円想定）
+- 項目2（entries 投入）が終わると 1b の RAG precision（`resolve_filter` 有効化）と業種別DI/IIP（項目3）の両方が前進
+- Drive 保存は Phase 1 の OAuth 設定待ち
+- Chroma は `make chroma-pull` でどのデバイスからも取得可（GCS 正本アップロード済み）
+- Gemini 3 系は thinking 既定 on。少ない出力上限だと空応答になるため軽量呼び出しは `light=True`（`llm.py`）
+- 評価に Anthropic/OpenAI を使うなら `uv sync --extra anthropic` / `--extra openai` と各 API キー
