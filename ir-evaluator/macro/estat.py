@@ -75,7 +75,9 @@ class EstatClient:
         cd_cat01: str | None = None,
         cd_area: str | None = None,
         cd_time_from: str | None = None,
+        cd_tab: str | None = None,
         limit: int | None = None,
+        extra: dict[str, str] | None = None,
     ) -> dict:
         """統計データ本体を取得する。分類コードで対象系列を絞り込む。
 
@@ -84,7 +86,10 @@ class EstatClient:
             cd_cat01: 分類事項1コード（例: CPI の「総合」）。
             cd_area: 地域コード（例: 全国）。
             cd_time_from: 取得開始時間コード（例: 201501000000）。
+            cd_tab: 表章事項コード（例: 景気動向指数の CI/DI 切り替え）。
             limit: 取得件数上限。
+            extra: cat02/cat03 等、上記に無い分類軸を絞り込む場合に
+                ``{"cdCat02": "08", "cdCat03": "0"}`` の形で渡す。
         """
         params: dict[str, str] = {"appId": self.app_id, "statsDataId": stats_data_id}
         if cd_cat01:
@@ -93,8 +98,12 @@ class EstatClient:
             params["cdArea"] = cd_area
         if cd_time_from:
             params["cdTimeFrom"] = cd_time_from
+        if cd_tab:
+            params["cdTab"] = cd_tab
         if limit:
             params["limit"] = str(limit)
+        if extra:
+            params.update(extra)
 
         resp = self.session.get(f"{ESTAT_BASE_URL}/getStatsData", params=params)
         resp.raise_for_status()

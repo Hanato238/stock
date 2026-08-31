@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>日米マクロ経済モニター</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #EBEFEC; --grid-line: rgba(22, 35, 42, 0.05); --surface: #FFFFFF; --surface-alt: #F3F6F4;
+    --ink: #16232A; --ink-muted: #55666C; --ink-faint: #8B9A9C; --border: #D7DFDA; --border-strong: #B9C6C0;
+    --accent: #1F4A5C; --accent-soft: #E4EBEA; --on-accent: #FFFFFF;
+    --risk-low: #3C7A57; --risk-low-soft: #E4EFE7; --risk-mid: #A8792B; --risk-mid-soft: #F3EADA;
+    --risk-high: #A63B33; --risk-high-soft: #F3E1DD;
+    --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --chart-grid: #D7DFDA;
+    --shadow: 0 1px 2px rgba(22, 35, 42, 0.06), 0 6px 20px -12px rgba(22, 35, 42, 0.18);
+    --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Georgia", serif;
+    --sans: "Hiragino Sans", "Yu Gothic Medium", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10161A; --grid-line: rgba(231, 233, 229, 0.045); --surface: #182028; --surface-alt: #1D2731;
+      --ink: #E9EDE9; --ink-muted: #A6B3B2; --ink-faint: #6E7C7C; --border: #2B3640; --border-strong: #3B4A54;
+      --accent: #7FA9BE; --accent-soft: #223440; --on-accent: #0F1A20;
+      --risk-low: #74B893; --risk-low-soft: #1E2E24; --risk-mid: #D2AC5F; --risk-mid-soft: #332A19;
+      --risk-high: #DE8579; --risk-high-soft: #35211D;
+      --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --chart-grid: #2B3640;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -16px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10161A; --grid-line: rgba(231, 233, 229, 0.045); --surface: #182028; --surface-alt: #1D2731;
+    --ink: #E9EDE9; --ink-muted: #A6B3B2; --ink-faint: #6E7C7C; --border: #2B3640; --border-strong: #3B4A54;
+    --accent: #7FA9BE; --accent-soft: #223440; --on-accent: #0F1A20;
+    --risk-low: #74B893; --risk-low-soft: #1E2E24; --risk-mid: #D2AC5F; --risk-mid-soft: #332A19;
+    --risk-high: #DE8579; --risk-high-soft: #35211D;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --chart-grid: #2B3640;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -16px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: repeating-linear-gradient(0deg, var(--grid-line) 0, var(--grid-line) 1px, transparent 1px, transparent 32px), var(--bg);
+    color: var(--ink); font-family: var(--sans); line-height: 1.8; -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 920px; margin: 0 auto; padding: 56px 24px 96px; }
+  a { color: var(--accent); }
+  .doc-header { padding-bottom: 28px; border-bottom: 2px solid var(--border-strong); margin-bottom: 20px; }
+  .eyebrow { font-family: var(--serif); font-size: 0.78rem; letter-spacing: 0.28em; color: var(--ink-muted); margin: 0 0 14px; }
+  .company-name { font-family: var(--serif); font-weight: 600; font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.35; margin: 0 0 12px; text-wrap: balance; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.86rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .meta-row dt { display: inline; font-weight: 600; color: var(--ink-faint); }
+  .meta-row .meta-item { display: inline-flex; gap: 5px; }
+  .meta-row dd { margin: 0; }
+  .toc-nav { display: flex; flex-wrap: wrap; gap: 7px 4px; margin: 0 0 40px; padding-bottom: 18px; border-bottom: 1px solid var(--border); font-size: 0.78rem; }
+  .toc-nav a { color: var(--ink-muted); text-decoration: none; padding: 3px 10px; border-radius: 999px; border: 1px solid transparent; }
+  .toc-nav a:hover { color: var(--accent); border-color: var(--border); background: var(--accent-soft); }
+  section { margin-bottom: 44px; }
+  h2 { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; margin: 0 0 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; scroll-margin-top: 20px; }
+  h2 .h2-sub { font-family: var(--sans); font-size: 0.76rem; font-weight: 400; color: var(--ink-faint); letter-spacing: 0.04em; }
+  h3.subsection-title { font-family: var(--serif); font-size: 1rem; font-weight: 600; margin: 34px 0 6px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; scroll-margin-top: 20px; }
+  .subsection-lede { font-size: 0.84rem; color: var(--ink-muted); max-width: 66ch; margin: 0 0 16px; }
+  .section-lede { font-size: 0.86rem; color: var(--ink-muted); max-width: 68ch; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .tile-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 8px; }
+  .tile { background: var(--surface); padding: 16px 18px; }
+  .tile .t-label { font-size: 0.72rem; color: var(--ink-faint); margin: 0 0 6px; }
+  .tile .t-value { font-variant-numeric: tabular-nums; font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+  .tile .t-delta { display: block; font-size: 0.76rem; font-weight: 600; margin-top: 5px; font-variant-numeric: tabular-nums; }
+  .tile .t-delta.up { color: var(--risk-low); }
+  .tile .t-delta.down { color: var(--risk-high); }
+  .tile .t-status { display: inline-block; margin-top: 6px; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .tile .t-status.expand { background: var(--risk-low-soft); color: var(--risk-low); }
+  .tile .t-status.contract { background: var(--risk-mid-soft); color: var(--risk-mid); }
+  .tile .t-status.neutral { background: var(--surface-alt); color: var(--ink-muted); border: 1px solid var(--border); }
+  @media (max-width: 720px) { .tile-row { grid-template-columns: repeat(2, 1fr); } }
+  .region-head { display: flex; align-items: baseline; gap: 12px; margin: 40px 0 4px; padding-top: 22px; border-top: 1px dashed var(--border); }
+  .region-head.first { margin-top: 32px; padding-top: 0; border-top: none; }
+  .region-label { font-family: var(--serif); font-size: 0.72rem; letter-spacing: 0.22em; color: var(--accent); }
+  .region-flag { font-size: 0.72rem; color: var(--ink-faint); }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 22px 16px; box-shadow: var(--shadow); position: relative; margin-bottom: 14px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+  .chart-title { font-family: var(--serif); font-weight: 600; font-size: 0.98rem; }
+  .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.76rem; color: var(--ink-muted); }
+  .chart-legend .lg-item { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend .lg-key { width: 14px; height: 2px; border-radius: 1px; display: inline-block; }
+  .chart-wrap { position: relative; width: 100%; overflow-x: auto; }
+  .chart-wrap svg { display: block; width: 100%; height: auto; }
+  .axis-label { font-size: 10px; fill: var(--ink-faint); font-family: var(--sans); }
+  .gridline { stroke: var(--chart-grid); stroke-width: 1; }
+  .series-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .end-dot { r: 4; stroke: var(--surface); stroke-width: 2; }
+  .crosshair-line { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; pointer-events: none; }
+  .hover-dot { r: 5; stroke: var(--surface); stroke-width: 2; opacity: 0; pointer-events: none; }
+  .direct-label { font-size: 11px; font-weight: 700; font-family: var(--sans); }
+  .hit-rect { fill: transparent; cursor: crosshair; }
+  .tooltip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 6px; padding: 8px 11px; font-size: 0.76rem; line-height: 1.6; opacity: 0; transform: translate(-50%, -110%); transition: opacity 0.08s; white-space: nowrap; z-index: 5; box-shadow: var(--shadow); }
+  .tooltip .tt-date { font-weight: 700; margin-bottom: 3px; font-variant-numeric: tabular-nums; opacity: 0.85; }
+  .tooltip .tt-row { display: flex; justify-content: space-between; gap: 12px; }
+  .tooltip .tt-row .tt-k { display: flex; align-items: center; gap: 5px; opacity: 0.85; }
+  .tooltip .tt-row .tt-key-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .tooltip .tt-v { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .chart-foot-note { font-size: 0.74rem; color: var(--ink-faint); margin-top: 10px; }
+  .gauge-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0 26px; }
+  .gauge-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .gauge-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .gauge-name { font-family: var(--serif); font-weight: 600; font-size: 0.9rem; }
+  .gauge-value { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.1rem; }
+  .gauge-track { position: relative; height: 10px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 5px; margin-bottom: 6px; }
+  .gauge-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 5px 0 0 5px; }
+  .gauge-fill.expand { background: var(--risk-low); }
+  .gauge-fill.contract { background: var(--risk-mid); }
+  .gauge-mid-tick { position: absolute; top: -3px; bottom: -3px; left: 50%; width: 1px; background: var(--border-strong); }
+  .gauge-note { font-size: 0.72rem; color: var(--ink-faint); }
+  .gauge-status { font-size: 0.7rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+  .gauge-status.expand { background: var(--risk-low-soft); color: var(--risk-low); }
+  .gauge-status.contract { background: var(--risk-mid-soft); color: var(--risk-mid); }
+  .gauge-status.neutral { background: var(--surface-alt); color: var(--ink-muted); border: 1px solid var(--border); }
+  @media (max-width: 640px) { .gauge-row { grid-template-columns: 1fr; } }
+  .market-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 26px; }
+  .market-stats .ms-cell { background: var(--surface); padding: 12px 14px; }
+  .market-stats .ms-label { font-size: 0.7rem; color: var(--ink-faint); margin: 0 0 4px; }
+  .market-stats .ms-value { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 0.95rem; }
+  @media (max-width: 640px) { .market-stats { grid-template-columns: repeat(2, 1fr); } }
+  .base-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .base-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .base-card .b-label2 { font-size: 0.76rem; color: var(--ink-faint); margin: 0 0 8px; }
+  .base-card .b-value2 { font-variant-numeric: tabular-nums; font-size: 1.3rem; font-weight: 700; }
+  .base-card .b-delta { display: block; font-size: 0.78rem; margin-top: 6px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .base-card .b-asof { display: block; font-size: 0.7rem; color: var(--ink-faint); margin-top: 8px; }
+  @media (max-width: 720px) { .base-grid { grid-template-columns: repeat(2, 1fr); } }
+  .pipeline-note { background: var(--accent-soft); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 4px; padding: 14px 18px; font-size: 0.84rem; color: var(--ink); line-height: 1.75; margin-top: 18px; }
+  .reading-panel { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px; font-size: 0.86rem; color: var(--ink); line-height: 1.85; margin-top: 4px; }
+  .reading-panel p { margin: 0 0 10px; }
+  .reading-panel p:last-child { margin-bottom: 0; }
+  .verdict-panel { background: var(--surface-alt); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 4px; padding: 20px 22px; font-size: 0.92rem; color: var(--ink); line-height: 1.85; margin-top: 16px; }
+  .verdict-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .verdict-head .v-title { font-family: var(--serif); font-weight: 600; font-size: 1rem; }
+  .tab-bar { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .tab-btn { font-family: var(--sans); font-size: 0.82rem; color: var(--ink-muted); background: transparent; border: none; border-bottom: 2px solid transparent; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab-btn:hover { color: var(--accent); }
+  .tab-count { font-size: 0.68rem; color: var(--ink-faint); background: var(--surface-alt); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+  .tab-btn.active .tab-count { color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .ind-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .ind-grid { grid-template-columns: 1fr; } }
+  .ind-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .ind-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+  .ind-name { font-family: var(--serif); font-weight: 600; font-size: 0.9rem; }
+  .ind-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .ind-badge.easy { background: var(--risk-low-soft); color: var(--risk-low); }
+  .ind-badge.manual { background: var(--risk-mid-soft); color: var(--risk-mid); }
+  .ind-badge.hard { background: var(--risk-high-soft); color: var(--risk-high); }
+  .ind-desc { font-size: 0.82rem; color: var(--ink-muted); line-height: 1.7; margin: 0 0 8px; }
+  .ind-meta { font-size: 0.74rem; color: var(--ink-faint); margin: 0; }
+  .example-box { background: var(--accent-soft); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px 18px; margin-top: 22px; }
+  .example-title { font-family: var(--serif); font-weight: 600; font-size: 0.9rem; margin: 0 0 6px; }
+  .example-lede { font-size: 0.8rem; color: var(--ink-muted); margin: 0 0 8px; }
+  .example-list { margin: 0; padding-left: 1.2em; font-size: 0.84rem; color: var(--ink); line-height: 1.7; }
+  .sector-trend-card { margin-bottom: 16px; }
+  .appendix-note { font-size: 0.82rem; color: var(--ink-faint); }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+  .sources { font-size: 0.76rem; color: var(--ink-faint); line-height: 1.8; }
+  .disclaimer { font-size: 0.78rem; color: var(--ink-faint); line-height: 1.7; max-width: 74ch; }
+  .gen-meta { font-size: 0.76rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="page" lang="ja">
+
+  <header class="doc-header">
+    <p class="eyebrow">マクロ経済モニター</p>
+    <h1 class="company-name">日本・米国 景気サイクル定点観測</h1>
+    <dl class="meta-row">
+      <span class="meta-item"><dt>データ最終更新</dt><dd>2026-08-28</dd></span>
+      <span class="meta-item"><dt>ページ生成</dt><dd>2026-08-31 20:04 UTC</dd></span>
+      <span class="meta-item"><dt>対象地域</dt><dd>日本 / 米国</dd></span>
+    </dl>
+  </header>
+
+  <nav class="toc-nav" aria-label="目次">
+    <a href="#snapshot">スナップショット</a>
+    <a href="#japan">日本</a>
+    <a href="#us">米国</a>
+    <a href="#sectors">セクター指標カタログ</a>
+    <a href="#appendix">付録</a>
+  </nav>
+
+  <section id="snapshot">
+    <h2>スナップショット <span class="h2-sub">主要8指標</span></h2>
+    <p class="section-lede">個別企業を評価する前に、まず日米の景気循環・市場・金融政策の全体像を単独で確認するためのページです。ここで示す指標そのものへの投資判断（買い時/売り時）は行わず、循環局面の事実確認にとどめています。</p>
+
+    <div class="tile-row">
+      <div class="tile"><p class="t-label">日経平均株価</p><p class="t-value">66036.8円</p><span class="t-delta up">前年比 +53.3%</span></div>
+      <div class="tile"><p class="t-label">景気動向指数 CI一致指数</p><p class="t-value">118.5</p><span class="t-delta">前年比 +2.4%</span></div>
+      <div class="tile"><p class="t-label">景気動向指数 DI一致指数</p><p class="t-value">72.2</p><span class="t-status expand">拡大局面の目安（&gt;50）</span></div>
+      <div class="tile"><p class="t-label">USD/JPY</p><p class="t-value">162.3円</p><span class="t-delta up">前年比 +10.3%</span></div>
+      <div class="tile"><p class="t-label">S&amp;P500</p><p class="t-value">7689.72pt</p><span class="t-delta up">前年比 +19.8%</span></div>
+      <div class="tile"><p class="t-label">米国 景気活動指数 CFNAI</p><p class="t-value">-0.08</p><span class="t-status neutral">3か月平均 -0.04</span></div>
+      <div class="tile"><p class="t-label">FF金利誘導目標</p><p class="t-value">3.63%</p><span class="t-delta down">前年差 -0.70%pt</span></div>
+      <div class="tile"><p class="t-label">米国コアCPI（水準）</p><p class="t-value">336.8</p><span class="t-delta">前年比 +2.5%</span></div>
+    </div>
+  </section>
+
+  <section id="japan">
+    <div class="region-head first"><span class="region-label">日本</span><span class="region-flag">景気動向指数・株式市場・金融政策</span></div>
+
+    <h3 class="subsection-title">景気動向指数（CI・DI） <span class="h2-sub">内閣府</span></h3>
+    <p class="subsection-lede">CI（コンポジット・インデックス）は景気変動の「大きさ・テンポ」を表す量的指標、DI（ディフュージョン・インデックス）は構成系列のうち何%が改善しているかを示す「波及度合い」の指標です。DIは50が拡大・後退の分岐点とされます。</p>
+    <div class="chart-card">
+      <div class="chart-head"><span class="chart-title">CI指数の推移（2020年=100）</span><div class="chart-legend" id="ci-legend"></div></div>
+      <div class="chart-wrap"><svg id="ci-chart" viewBox="0 0 760 260" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <p class="chart-foot-note">出典: 内閣府「景気動向指数」長期系列（e-Stat API, statsDataId 0003446461）。</p>
+    </div>
+    <div class="gauge-row" id="di-gauges"></div>
+
+    <h3 class="subsection-title">株式市場 <span class="h2-sub">日経平均株価</span></h3>
+    <div class="chart-card">
+      <div class="chart-head"><span class="chart-title">日経平均株価 週次推移</span></div>
+      <div class="chart-wrap"><svg id="nikkei-chart" viewBox="0 0 760 240" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <p class="chart-foot-note">出典: FRED（series: NIKKEI225）。</p>
+    </div>
+    <div class="market-stats">
+      <div class="ms-cell"><p class="ms-label">取得期間内変化（起点 2026-06-26〜）</p><p class="ms-value">+61.7%</p></div>
+      <div class="ms-cell"><p class="ms-label">期間内高値（2026-06-26）</p><p class="ms-value">70,609円</p></div>
+      <div class="ms-cell"><p class="ms-label">期間内安値（2025-08-01）</p><p class="ms-value">40,839円</p></div>
+      <div class="ms-cell"><p class="ms-label">10年国債利回り（2026-06-01）</p><p class="ms-value">2.67%</p></div>
+    </div>
+
+    <h3 class="subsection-title">読み方 <span class="h2-sub">LLM生成・データからの機械的な読み取り・公式見解ではありません</span></h3>
+    <div class="reading-panel">
+      <p><b>景気動向指数と実体経済の動向:</b> 景気の一致指数は極めて堅調に推移しています。2026年6月時点のCI一致指数は118.5と期間内高値を記録し、起点比+4.9%の上昇となりました。DI一致指数も72.2と景気判断の分岐点である50%を大きく上回っています。さらに先行指標であるCI先行指数は116.5（同+6.0%）、DI先行指数は60.0を維持しており、2026年4月時点の名目GDPも687.7兆円（同+8.5%）へ拡大するなど、日本経済は力強い拡大基調を維持しています。</p>
+      <p><b>株式市場と為替レートの動向:</b> 堅調な実体経済を背景に、株式市場は大幅な上昇を見せています。日経平均株価は2026年8月28日時点で66,037円となり、2025年8月時点の40,839円から+61.7%の大幅高となりました。一方、為替市場ではUSD/JPYが2026年7月時点で162.3円を記録し、期間内高値を更新するなど円安水準が継続しています。こうした為替動向と企業業績の拡大が、株価を力強く押し上げる要因となっています。</p>
+      <p><b>物価上昇と金利環境の変化:</b> 物価と金利の両面で正常化・上昇基調が顕著です。2026年7月時点のコアCPIは113.6（起点比+4.9%）とインフレ傾向が定着しています。これに伴い日銀の政策金利は2026年6月時点で0.84%（同+0.76%pt）まで引き上げられ、日本の10年国債利回りも2.67%（同+1.07%pt）と期間内高値へ上昇しました。金利環境の変化が進む中でも、経済活動の拡大傾向は維持されています。</p>
+    </div>
+    <div class="verdict-panel" style="border-left-color:var(--risk-low)">
+      <div class="verdict-head">
+        <span class="gauge-status expand">力強い景気拡大局面</span>
+        <span class="v-title">日本 総合見立て</span>
+      </div>
+      <p>各種景気指数や名目GDPの推移から、現在の日本経済は力強い拡大局面に位置していると判断されます。インフレ定着に伴う金利上昇が進んでいるものの、一致・先行指数の堅調さを見る限り、景気の拡大基調は当面継続する可能性が高い状況です。</p>
+    </div>
+
+    <h3 class="subsection-title">基礎指標 <span class="h2-sub">各社評価レポートのマクロ前提として使用</span></h3>
+    <div class="base-grid">
+      <div class="base-card"><p class="b-label2">USD/JPY 為替レート</p><p class="b-value2">162.3円</p><span class="b-delta up">前年比 +10.3%</span><span class="b-asof">2026-07-01 ／ 出典: FRED</span></div>
+      <div class="base-card"><p class="b-label2">政策金利（無担保コール翌日物近似）</p><p class="b-value2">0.84%</p><span class="b-delta">前年差 +0.36%pt</span><span class="b-asof">2026-06-01 ／ 出典: FRED</span></div>
+      <div class="base-card"><p class="b-label2">名目GDP（水準）</p><p class="b-value2">687.7兆円</p><span class="b-delta">前年比 +3.1%</span><span class="b-asof">2026-04-01 ／ 出典: FRED</span></div>
+      <div class="base-card"><p class="b-label2">コアCPI（生鮮食品を除く総合）</p><p class="b-value2">113.6</p><span class="b-delta">前年比 +1.8%</span><span class="b-asof">2026-07-01 ／ 出典: e-Stat（総務省）</span></div>
+    </div>
+    <p class="pipeline-note">この4系列は <code>data/macro/overall.json</code> に時系列で保存され、個別企業の評価レポートは決算期時点の値と本ページの最新値を併記して引用します。</p>
+  </section>
+
+  <section id="us">
+    <div class="region-head"><span class="region-label">米国</span><span class="region-flag">景気活動指数・株式市場・金融政策</span></div>
+
+    <h3 class="subsection-title">景気活動指数（CFNAI） <span class="h2-sub">シカゴ連銀</span></h3>
+    <p class="subsection-lede">日本のCI/DIに相当する公式の月次指標は米国には存在しないため、シカゴ連銀が毎月公表する National Activity Index（CFNAI）を採用しています。0＝トレンド並みの成長、CFNAI-MA3が-0.70を下回ると景気後退リスク、+0.70を上回るとインフレ加速リスクの高まりが目安とされます。</p>
+    <div class="chart-card">
+      <div class="chart-head"><span class="chart-title">CFNAIの推移</span><div class="chart-legend" id="cfnai-legend"></div></div>
+      <div class="chart-wrap"><svg id="cfnai-chart" viewBox="0 0 760 240" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <p class="chart-foot-note">出典: FRED（series: CFNAI, CFNAIMA3、原資料はシカゴ連銀）。</p>
+    </div>
+
+    <h3 class="subsection-title">株式市場 <span class="h2-sub">S&amp;P500</span></h3>
+    <div class="chart-card">
+      <div class="chart-head"><span class="chart-title">S&amp;P500 週次推移</span></div>
+      <div class="chart-wrap"><svg id="sp500-chart" viewBox="0 0 760 220" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <p class="chart-foot-note">出典: FRED（series: SP500）。</p>
+    </div>
+    <div class="market-stats">
+      <div class="ms-cell"><p class="ms-label">取得期間内変化</p><p class="ms-value">+30.3%</p></div>
+      <div class="ms-cell"><p class="ms-label">期間内高値（2026-08-14）</p><p class="ms-value">7,763</p></div>
+      <div class="ms-cell"><p class="ms-label">期間内安値（2025-04-11）</p><p class="ms-value">5,227</p></div>
+      <div class="ms-cell"><p class="ms-label">10年国債利回り（2026-08-01）</p><p class="ms-value">4.68%</p></div>
+    </div>
+
+    <h3 class="subsection-title">金利・物価・成長 <span class="h2-sub">FRED</span></h3>
+    <div class="base-grid">
+      <div class="base-card"><p class="b-label2">FF金利誘導目標</p><p class="b-value2">3.63%</p><span class="b-delta down">前年差 -0.70%pt</span><span class="b-asof">2026-07-01 ／ 出典: FRED（FEDFUNDS）</span></div>
+      <div class="base-card"><p class="b-label2">CPI（総合、水準）</p><p class="b-value2">332.8</p><span class="b-delta">前年比 +3.3%</span><span class="b-asof">出典: FRED（CPIAUCSL）</span></div>
+      <div class="base-card"><p class="b-label2">コアCPI（食品・エネルギー除く、水準）</p><p class="b-value2">336.8</p><span class="b-delta">前年比 +2.5%</span><span class="b-asof">2026-07-01 ／ 出典: FRED（CPILFESL）</span></div>
+      <div class="base-card"><p class="b-label2">実質GDP成長率（前期比年率）</p><p class="b-value2">1.50%</p><span class="b-asof">2026-04-01 ／ 出典: FRED（BEA）</span></div>
+    </div>
+
+    <h3 class="subsection-title">読み方 <span class="h2-sub">LLM生成・データからの機械的な読み取り・公式見解ではありません</span></h3>
+    <div class="reading-panel">
+      <p><b>景気動向指数と実質GDP：トレンド並みの安定推移:</b> 米国の景気活動指数CFNAIは2026年7月時点で-0.1、3か月移動平均（CFNAI-MA3）は-0.0となり、歴史的なトレンド水準であるゼロ近傍で推移しています。実質GDP成長率（前期比年率）も2025年1月時点の-0.60%から2026年4月時点で1.50%へ持ち直しており、2025年7月の高値4.40%からは落ち着きを見せつつも、景気後退を回避し巡航速度での推移を維持しています。</p>
+      <p><b>株式市場：堅調な推移と高値圏の維持:</b> 株式市場ではS&P500が2026年8月28日時点で7,690を記録し、2025年1月3日時点の5,900から+30.3%と大幅な上昇を示しています。2025年4月11日の安値5,227から持ち直し、2026年8月14日には高値7,763を付けるなど、堅調な企業業績や利下げ期待を背景に底堅い相場展開が継続しています。</p>
+      <p><b>金利と物価動向：利下げ進行と粘着する物価指標:</b> 政策金利であるFF金利誘導目標は3.63%と、2025年1月の4.33%から-0.70%pt低下して金融緩和が進んでいます。一方で10年国債利回りは4.68%と高値圏にあります。物価面ではCPIが332.8、コアCPIが336.8と依然として上昇基調を維持しており、物価の高止まりが長期金利の下落を抑制する要因となっています。</p>
+    </div>
+    <div class="verdict-panel" style="border-left-color:var(--ink-faint)">
+      <div class="verdict-head">
+        <span class="gauge-status neutral">巡航速度の推移局面</span>
+        <span class="v-title">米国 総合見立て</span>
+      </div>
+      <p>米国の景気指標はCFNAI-MA3が-0.0、実質GDP成長率が1.50%と、トレンド並みの巡航速度で安定した推移を示しています。政策金利が3.63%へと引き下げられる中で株式市場は堅調を維持しており、物価の粘着性に留意しつつも全体として底堅い景気循環が継続していると判断されます。</p>
+    </div>
+  </section>
+
+  <section id="sectors">
+    <h2>セクター指標カタログ <span class="h2-sub">38指標・grill-meで調査・カタログ化</span></h2>
+    <p class="section-lede">CI/DI・CFNAI等の全体マクロ指標に加えて、個別株の評価が業種に応じて参照するセクター指標のカタログです。各タブの冒頭には、その分野を代表する指標の実際の時系列推移を掲載し、分野ごとの景況がどう動いているか一目でわかるようにしています（全38指標のうち5分野の代表5指標のみ、他はカード情報のみ）。個別株ページ側では、企業の業種タームからこの中の数指標がLLMにより自動選択されます（下記に実例）。</p>
+
+    <div class="tabs-block">
+      <div class="tab-bar">
+      <button class="tab-btn active" data-tab="cat-tab-0">消費・小売<span class="tab-count">11</span></button>
+      <button class="tab-btn" data-tab="cat-tab-1">企業活動・景況<span class="tab-count">6</span></button>
+      <button class="tab-btn" data-tab="cat-tab-2">貿易・生産<span class="tab-count">7</span></button>
+      <button class="tab-btn" data-tab="cat-tab-3">労働・物価<span class="tab-count">8</span></button>
+      <button class="tab-btn" data-tab="cat-tab-4">不動産・金融<span class="tab-count">6</span></button>
+      </div>
+      <div class="tab-panels">
+      <div class="tab-panel active" id="cat-tab-0">
+        <div class="chart-card sector-trend-card">
+          <div class="chart-head">
+            <span class="chart-title">消費・小売の景況推移: 景気ウォッチャー調査 現状判断DI（全国・全分野）</span>
+          </div>
+          <div class="chart-wrap"><svg id="sector-chart-0" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
+          <p class="chart-foot-note">直近（2026-07-01）: 45.8DI(0-100) ／ 2024-01-01以降 -3.4% 低下 ／ 出典: e-Stat:0003348427/tab=140,cat01=100,cat02=100,cat03=100</p>
+        </div>
+        <div class="ind-grid">
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">家計調査</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">全国の世帯の収入・支出を毎月調査する統計。個人消費の実勢を最も直接的に映す基礎データ。</p>
+          <p class="ind-meta">総務省統計局 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">商業動態統計</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">百貨店・スーパー・コンビニ・卸売業の販売額を毎月集計。小売・卸売の売上トレンドを業種別に把握できる。</p>
+          <p class="ind-meta">経済産業省 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">消費総合指数</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">個人消費に関連する複数の統計を合成した内閣府の指数。単月の振れをならして消費の基調を見るのに向く。</p>
+          <p class="ind-meta">内閣府（経済財政政策担当） ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">消費活動指数（CAI）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">日銀が消費関連統計を合成した指数。実質消費支出とほぼ同じ動きをするよう設計されており、GDP統計の消費速報値の目安として使われる。</p>
+          <p class="ind-meta">日本銀行 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">景気ウォッチャー調査</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">小売店主・タクシー運転手など景気の現場を知る人々への聞き取り調査。DIが50超で景況改善。GDPより数週間早く公表される速報性の高い指標。</p>
+          <p class="ind-meta">内閣府 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">消費動向調査（消費者態度指数）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">一般消費者への意識調査（暮らし向き・耐久財の買い時等）。消費者マインドの先行指標として使われる。</p>
+          <p class="ind-meta">内閣府（経済社会総合研究所） ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">新車販売台数</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">新車の登録・届出台数。大型耐久消費財である自動車の需要動向を速報する代表的な業界統計。</p>
+          <p class="ind-meta">日本自動車販売協会連合会（JADA、登録車）／全国軽自動車協会連合会（全軽自協、軽自動車） ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">百貨店売上高</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">百貨店の売上高。高級品・ギフト需要など消費の質的な変化を映す。</p>
+          <p class="ind-meta">日本百貨店協会 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">チェーンストア販売統計</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">スーパー等チェーンストアの既存店売上高。日常消費財の販売動向を示す。</p>
+          <p class="ind-meta">日本チェーンストア協会 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">コンビニエンスストア統計調査</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">コンビニの売上高・来店客数。少額日常消費のリアルタイムに近い指標。</p>
+          <p class="ind-meta">日本フランチャイズチェーン協会（JFA） ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">外食産業市場動向調査</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">外食産業の売上高・客数。サービス消費（人流を伴う消費）の動向を示す。</p>
+          <p class="ind-meta">一般社団法人日本フードサービス協会（JF） ／ 月次（年間集計は年1回）</p>
+        </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="cat-tab-1">
+        <div class="chart-card sector-trend-card">
+          <div class="chart-head">
+            <span class="chart-title">企業活動・景況の景況推移: 売上高経常利益率（全産業except金融保険業・全規模）</span>
+          </div>
+          <div class="chart-wrap"><svg id="sector-chart-1" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
+          <p class="chart-foot-note">直近（2026-01-01）: 8.00% ／ 2024-01-01以降 +0.90%pt 上昇 ／ 出典: e-Stat:0003060191/cat01=154,cat02=104,cat03=26</p>
+        </div>
+        <div class="ind-grid">
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">特定サービス産業動態統計（2025年1月よりサービス産業動態統計調査に統合）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">情報通信・広告・専門サービス等、サービス業の売上高を業種別に毎月集計。サービス経済の活動水準を示す。</p>
+          <p class="ind-meta">経済産業省（〜2024年12月）／総務省統計局（2025年1月〜、統合後） ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">法人企業統計調査</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">全業種の企業の売上高・利益・設備投資等を四半期ごとに集計。企業部門の実績を業種別・規模別に見られる基礎統計。</p>
+          <p class="ind-meta">財務省（財務総合政策研究所） ／ 四半期（年次確報は9月公表）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">全国企業短期経済観測調査（日銀短観）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">日銀が大企業・中小企業に業況を尋ねる調査。業況判断DIは景気の代表的なセンチメント指標として金融市場でも注視される。</p>
+          <p class="ind-meta">日本銀行 ／ 四半期（3月・6月・9月・12月）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">法人企業景気予測調査</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">企業自身による先行き（業況・売上・投資）の予測調査。短観を補完する形で企業マインドの先行きを示す。</p>
+          <p class="ind-meta">内閣府（経済社会総合研究所）・財務省 共管 ／ 四半期（3月・6月・9月・12月中旬公表）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">中小企業景況調査</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">中小企業約1.9万社への四半期調査。大企業中心の短観を補完し、中小企業セクターの実感を示す。</p>
+          <p class="ind-meta">独立行政法人中小企業基盤整備機構（中小機構） ／ 四半期</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">倒産に関する統計（全国企業倒産集計）</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">全国の企業倒産件数・負債総額。景気の悪化局面で先行して増加する傾向があり、信用リスクの警戒指標として使われる。</p>
+          <p class="ind-meta">東京商工リサーチ（TSR）「全国企業倒産状況」／帝国データバンク（TDB）「全国企業倒産集計」／法務省（司法統計・破産事件数） ／ 月次（TSR・TDB）／法務省司法統計は年次</p>
+        </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="cat-tab-2">
+        <div class="chart-card sector-trend-card">
+          <div class="chart-head">
+            <span class="chart-title">貿易・生産の景況推移: コア機械受注（民需、船舶・電力除く、季調系列）</span>
+          </div>
+          <div class="chart-wrap"><svg id="sector-chart-2" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
+          <p class="chart-foot-note">直近（2026-06-01）: 1.05576e+06百万円 ／ 2024-01-01以降 +26.3% 上昇 ／ 出典: e-Stat:0003355222/tab=100,cat01=160,cat02=100</p>
+        </div>
+        <div class="ind-grid">
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">貿易統計（普通貿易統計）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">輸出入額を品目別・国別に集計。外需の強弱や為替の影響を確認できる。</p>
+          <p class="ind-meta">財務省（関税局） ／ 月次（速報→確報、年次確定）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">国際収支統計</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">貿易・サービス・投資収益等を含む対外収支全体。日本の対外競争力や資金の出入りを示す。</p>
+          <p class="ind-meta">財務省・日本銀行（共同作成、日銀国際局集計） ／ 月次（速報は取引月の約2ヶ月後）、四半期・年次データもあり</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">鉱工業指数（鉄鋼業）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">鉄鋼業の生産・出荷・在庫指数。建設・自動車・造船など鉄鋼需要産業の裾野景気を反映する先行性の高い指標。</p>
+          <p class="ind-meta">経済産業省 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">第3次産業活動指数</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">運輸・情報通信・金融等サービス業の活動量を示す指数。GDPの7割を占める第3次産業の稼働状況を月次で把握できる。</p>
+          <p class="ind-meta">経済産業省 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">機械受注統計調査</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">機械メーカーが受け取った新規受注額。設備投資の6〜9か月先行指標として金融市場で重視される。</p>
+          <p class="ind-meta">内閣府（経済社会総合研究所 ESRI） ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">工作機械受注統計</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">工作機械（生産設備を作る機械）の受注額。製造業の設備投資意欲を最も早く映す指標のひとつ。</p>
+          <p class="ind-meta">一般社団法人日本工作機械工業会（日工会） ／ 月次（速報・確報）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">建築着工統計調査（住宅着工統計・建築物着工統計）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">新規の住宅・建築物の着工件数・床面積。建設需要・住宅市場の先行指標。</p>
+          <p class="ind-meta">国土交通省 ／ 月次</p>
+        </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="cat-tab-3">
+        <div class="chart-card sector-trend-card">
+          <div class="chart-head">
+            <span class="chart-title">労働・物価の景況推移: 完全失業率（全国・総数）</span>
+          </div>
+          <div class="chart-wrap"><svg id="sector-chart-3" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
+          <p class="chart-foot-note">直近（2026-07-01）: 2.40% ／ 2024-01-01以降 +0.00%pt 上昇 ／ 出典: e-Stat:0003005865/tab=02,cat01=000,cat02=08,cat03=0</p>
+        </div>
+        <div class="ind-grid">
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">労働力調査</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">完全失業率・就業者数を毎月調査。マクロの労働需給・景気の体温を測る基礎統計。</p>
+          <p class="ind-meta">総務省統計局 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">一般職業紹介状況（有効求人倍率）</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">公共職業安定所（ハローワーク）を通じた求人・求職の状況。有効求人倍率は労働需給の引き締まり具合を示す。</p>
+          <p class="ind-meta">厚生労働省（職業安定業務統計） ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">毎月勤労統計調査</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">賃金・労働時間・雇用の変動を事業所調査で毎月集計。実質賃金の動向を確認できる。</p>
+          <p class="ind-meta">厚生労働省 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">消費者物価指数（全国）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">消費者が購入する財・サービスの価格変動。日銀の物価目標（2%）の達成度を測る中心的指標。</p>
+          <p class="ind-meta">総務省統計局 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">消費者物価指数（東京都区部）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">東京都区部のCPIで、全国CPIより1か月早く公表される先行指標。</p>
+          <p class="ind-meta">総務省統計局 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">企業物価指数（旧・卸売物価指数）</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">企業間で取引される商品の価格変動（旧・卸売物価指数）。原材料コストの上昇が消費者物価に転嫁される前段階を示す。</p>
+          <p class="ind-meta">日本銀行 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">企業向けサービス価格指数</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">企業間サービス取引の価格変動。人件費や物流費等のコスト圧力がサービス価格に及ぶ程度を示す。</p>
+          <p class="ind-meta">日本銀行 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">GDPデフレーター</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">名目GDPと実質GDPの比から算出する物価指標。輸入価格の影響を受けにくく、国内需要側の物価圧力を示す。</p>
+          <p class="ind-meta">内閣府（四半期別GDP速報） ／ 四半期</p>
+        </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="cat-tab-4">
+        <div class="chart-card sector-trend-card">
+          <div class="chart-head">
+            <span class="chart-title">不動産・金融の景況推移: マネーストックM2（平残）</span>
+          </div>
+          <div class="chart-wrap"><svg id="sector-chart-4" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
+          <p class="chart-foot-note">直近（2026-07-01）: 1297.0兆円 ／ 2024-01-01以降 +4.3% 上昇 ／ 出典: BOJ:MD02/MAM1NAM2M2MO</p>
+        </div>
+        <div class="ind-grid">
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">地価公示</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">国が毎年評価する標準地の価格。不動産市場・担保価値評価の基準となる公的な地価指標。</p>
+          <p class="ind-meta">国土交通省 ／ 年次（1月1日時点、公表は例年3月下旬）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">市街地価格指数</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">民間調査機関による都市部の地価動向指数。地価公示を補完する高頻度（年2回）の指標。</p>
+          <p class="ind-meta">日本不動産研究所（一般財団法人） ／ 年2回（5月下旬・11月下旬）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">不動産価格指数</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">実際の不動産取引価格から算出する指数。住宅は月次、商業用不動産は四半期で市場の実勢を反映する。</p>
+          <p class="ind-meta">国土交通省 ／ 月次（住宅）／四半期（商業用不動産）</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">株価指数（TOPIX等、日経平均以外）</span>
+            <span class="ind-badge manual">手動DL</span>
+          </div>
+          <p class="ind-desc">TOPIX等の株価指数。企業の将来収益に対する市場の期待を集約した指標。</p>
+          <p class="ind-meta">日本取引所グループ（JPX） ／ 日次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">マネーストック統計</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">金融機関から経済全体に供給されている資金量。金融緩和・引き締めの度合いを示す。</p>
+          <p class="ind-meta">日本銀行 ／ 月次</p>
+        </div>
+        <div class="ind-card">
+          <div class="ind-card-head">
+            <span class="ind-name">マネタリーベース</span>
+            <span class="ind-badge easy">機械取得可</span>
+          </div>
+          <p class="ind-desc">日銀が直接供給する資金量（日銀当座預金＋現金）。金融政策の量的な姿勢を最も直接的に示す。</p>
+          <p class="ind-meta">日本銀行 ／ 月次（平均残高、一部日次速報あり）</p>
+        </div>
+        </div>
+      </div>
+      </div>
+    </div>
+    <div class="example-box">
+      <p class="example-title">例: 森永乳業（乳製品製造業）の個別株ページの場合</p>
+      <p class="example-lede">業種タームから、このカタログの中から以下がLLMにより自動選択されます（<code>macro/indicators.py</code>）:</p>
+      <ul class="example-list"><li>商業動態統計</li><li>貿易統計（普通貿易統計）</li><li>国際収支統計</li><li>第3次産業活動指数</li><li>企業物価指数（旧・卸売物価指数）</li><li>新車販売台数</li></ul>
+    </div>
+  </section>
+
+  <section id="appendix" style="margin-bottom:0;">
+    <h2>付録</h2>
+    <p class="appendix-note">本ページの数値は個別企業の投資適格性評価レポートが参照する共通のマクロ前提です。「読み方」「総合見立て」は macro/narrative.py が LLM（Gemini）で自動生成しています。</p>
+  </section>
+
+  <footer>
+    <p class="gen-meta">ページ生成日時: 2026-08-31 20:04 UTC ／ データ最終更新: 2026-08-28</p>
+    <p class="sources">
+      【日本】景気動向指数: 内閣府「景気動向指数」長期系列（e-Stat API, statsDataId 0003446461） ／
+      日経平均株価・10年国債利回り: FRED（series NIKKEI225, IRLTLT01JPM156N） ／
+      USD/JPY・政策金利・名目GDP: FRED ／ コアCPI: e-Stat（総務省統計局）。
+      【米国】景気活動指数: FRED（series CFNAI, CFNAIMA3、原資料はシカゴ連銀） ／
+      S&amp;P500・10年国債利回り: FRED（series SP500, DGS10） ／
+      FF金利: FRED（FEDFUNDS） ／ CPI・コアCPI: FRED（CPIAUCSL, CPILFESL） ／
+      実質GDP成長率: FRED（series A191RL1Q225SBEA、原資料は米商務省BEA）。
+    </p>
+    <p class="disclaimer">本ページは公開統計・市場データの集計とその機械的な読み取りであり、投資助言ではありません。「読み方」「総合見立て」の記述は内閣府・FRB等による公式の基調判断を示すものではなく、特定銘柄の売買判断を示すものでもありません。金融商品取引法上の投資判断は利用者自身の責任で行ってください。</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  const svgNS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    const e = document.createElementNS(svgNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function makeTooltip(container) {
+    const tip = document.createElement('div');
+    tip.className = 'tooltip';
+    container.appendChild(tip);
+    return tip;
+  }
+  function renderLineChart(svgEl, series, opts) {
+    const W = opts.width, H = opts.height;
+    const padL = opts.padL || 44, padR = opts.padR || 64, padT = opts.padT || 16, padB = opts.padB || 28;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const n = series[0].points.length;
+    let allVals = [];
+    series.forEach(s => s.points.forEach(p => allVals.push(p.y)));
+    let vMin = Math.min(...allVals), vMax = Math.max(...allVals);
+    const pad = (vMax - vMin) * 0.12 || 1;
+    vMin -= pad; vMax += pad;
+    const xAt = i => padL + (n === 1 ? 0 : (plotW * i) / (n - 1));
+    const yAt = v => padT + plotH - ((v - vMin) / (vMax - vMin)) * plotH;
+    svgEl.innerHTML = '';
+    svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const gridSteps = 4;
+    for (let i = 0; i <= gridSteps; i++) {
+      const v = vMin + ((vMax - vMin) * i) / gridSteps;
+      const y = yAt(v);
+      svgEl.appendChild(el('line', { x1: padL, x2: W - padR, y1: y, y2: y, class: 'gridline' }));
+      const t = el('text', { x: padL - 8, y: y + 3, class: 'axis-label', 'text-anchor': 'end' });
+      t.textContent = opts.yfmt ? opts.yfmt(v) : Math.round(v);
+      svgEl.appendChild(t);
+    }
+    const labelEvery = opts.labelEvery || 1;
+    for (let i = 0; i < n; i += labelEvery) {
+      const t = el('text', { x: xAt(i), y: H - 6, class: 'axis-label', 'text-anchor': 'middle' });
+      t.textContent = series[0].points[i].label;
+      svgEl.appendChild(t);
+    }
+    series.forEach(s => {
+      const d = s.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xAt(i)} ${yAt(p.y)}`).join(' ');
+      svgEl.appendChild(el('path', { d, class: 'series-line', stroke: s.color }));
+      const last = s.points[n - 1];
+      svgEl.appendChild(el('circle', { cx: xAt(n - 1), cy: yAt(last.y), class: 'end-dot', fill: s.color }));
+      const lbl = el('text', { x: xAt(n - 1) + 8, y: yAt(last.y) + 4, class: 'direct-label', fill: s.color });
+      lbl.textContent = opts.endLabel ? opts.endLabel(s, last) : last.y;
+      svgEl.appendChild(lbl);
+    });
+    const crosshair = el('line', { x1: 0, x2: 0, y1: padT, y2: padT + plotH, class: 'crosshair-line' });
+    svgEl.appendChild(crosshair);
+    const hoverDots = series.map(s => {
+      const c = el('circle', { class: 'hover-dot', fill: s.color });
+      svgEl.appendChild(c);
+      return c;
+    });
+    const container = svgEl.closest('.chart-wrap');
+    const tip = makeTooltip(container);
+    const hit = el('rect', { x: padL, y: padT, width: plotW, height: plotH, class: 'hit-rect' });
+    svgEl.appendChild(hit);
+    function showAt(i) {
+      const x = xAt(i);
+      crosshair.setAttribute('x1', x); crosshair.setAttribute('x2', x);
+      crosshair.setAttribute('opacity', 1);
+      let rows = '';
+      series.forEach((s, si) => {
+        const p = s.points[i];
+        hoverDots[si].setAttribute('cx', x);
+        hoverDots[si].setAttribute('cy', yAt(p.y));
+        hoverDots[si].setAttribute('opacity', 1);
+        rows += `<div class="tt-row"><span class="tt-k"><span class="tt-key-dot" style="background:${s.color}"></span>${s.name}</span><span class="tt-v">${opts.tipfmt ? opts.tipfmt(p.y) : p.y}</span></div>`;
+      });
+      tip.innerHTML = `<div class="tt-date">${series[0].points[i].label}</div>${rows}`;
+      tip.style.opacity = 1;
+      const rect = container.getBoundingClientRect();
+      const svgRect = svgEl.getBoundingClientRect();
+      const scale = svgRect.width / W;
+      tip.style.left = (svgRect.left - rect.left + x * scale) + 'px';
+      tip.style.top = (svgRect.top - rect.top + yAt(Math.min(...series.map(s => s.points[i].y))) * scale) + 'px';
+    }
+    function hide() {
+      crosshair.setAttribute('opacity', 0);
+      hoverDots.forEach(d => d.setAttribute('opacity', 0));
+      tip.style.opacity = 0;
+    }
+    hit.addEventListener('pointermove', ev => {
+      const svgRect = svgEl.getBoundingClientRect();
+      const scale = W / svgRect.width;
+      const localX = (ev.clientX - svgRect.left) * scale;
+      let i = Math.round(((localX - padL) / plotW) * (n - 1));
+      i = Math.max(0, Math.min(n - 1, i));
+      showAt(i);
+    });
+    hit.addEventListener('pointerleave', hide);
+  }
+
+  const ciData = {"先行指数": [{"m": "2024/1", "v": 109.9}, {"m": "2024/2", "v": 111.3}, {"m": "2024/3", "v": 111.1}, {"m": "2024/4", "v": 110.4}, {"m": "2024/5", "v": 110.8}, {"m": "2024/6", "v": 109.6}, {"m": "2024/7", "v": 109.1}, {"m": "2024/8", "v": 107.3}, {"m": "2024/9", "v": 108.3}, {"m": "2024/10", "v": 108.4}, {"m": "2024/11", "v": 107.7}, {"m": "2024/12", "v": 107.5}, {"m": "2025/1", "v": 107.7}, {"m": "2025/2", "v": 107.1}, {"m": "2025/3", "v": 107.1}, {"m": "2025/4", "v": 104.3}, {"m": "2025/5", "v": 104.3}, {"m": "2025/6", "v": 105.2}, {"m": "2025/7", "v": 106.1}, {"m": "2025/8", "v": 106.9}, {"m": "2025/9", "v": 108.0}, {"m": "2025/10", "v": 109.2}, {"m": "2025/11", "v": 109.6}, {"m": "2025/12", "v": 110.5}, {"m": "2026/1", "v": 112.5}, {"m": "2026/2", "v": 114.3}, {"m": "2026/3", "v": 115.4}, {"m": "2026/4", "v": 116.1}, {"m": "2026/5", "v": 116.5}, {"m": "2026/6", "v": 116.5}], "一致指数": [{"m": "2024/1", "v": 113.0}, {"m": "2024/2", "v": 112.8}, {"m": "2024/3", "v": 113.7}, {"m": "2024/4", "v": 114.5}, {"m": "2024/5", "v": 115.5}, {"m": "2024/6", "v": 114.8}, {"m": "2024/7", "v": 115.5}, {"m": "2024/8", "v": 114.1}, {"m": "2024/9", "v": 114.2}, {"m": "2024/10", "v": 115.9}, {"m": "2024/11", "v": 115.3}, {"m": "2024/12", "v": 116.3}, {"m": "2025/1", "v": 116.2}, {"m": "2025/2", "v": 116.5}, {"m": "2025/3", "v": 115.8}, {"m": "2025/4", "v": 115.7}, {"m": "2025/5", "v": 115.8}, {"m": "2025/6", "v": 115.7}, {"m": "2025/7", "v": 115.0}, {"m": "2025/8", "v": 113.9}, {"m": "2025/9", "v": 115.1}, {"m": "2025/10", "v": 115.7}, {"m": "2025/11", "v": 114.9}, {"m": "2025/12", "v": 114.6}, {"m": "2026/1", "v": 117.9}, {"m": "2026/2", "v": 116.5}, {"m": "2026/3", "v": 116.8}, {"m": "2026/4", "v": 118.1}, {"m": "2026/5", "v": 117.9}, {"m": "2026/6", "v": 118.5}], "遅行指数": [{"m": "2024/1", "v": 106.7}, {"m": "2024/2", "v": 107.8}, {"m": "2024/3", "v": 108.0}, {"m": "2024/4", "v": 107.5}, {"m": "2024/5", "v": 109.0}, {"m": "2024/6", "v": 108.5}, {"m": "2024/7", "v": 109.0}, {"m": "2024/8", "v": 109.5}, {"m": "2024/9", "v": 108.9}, {"m": "2024/10", "v": 109.4}, {"m": "2024/11", "v": 109.7}, {"m": "2024/12", "v": 110.4}, {"m": "2025/1", "v": 111.8}, {"m": "2025/2", "v": 111.8}, {"m": "2025/3", "v": 111.9}, {"m": "2025/4", "v": 113.2}, {"m": "2025/5", "v": 114.2}, {"m": "2025/6", "v": 113.7}, {"m": "2025/7", "v": 113.7}, {"m": "2025/8", "v": 112.7}, {"m": "2025/9", "v": 112.9}, {"m": "2025/10", "v": 112.8}, {"m": "2025/11", "v": 113.1}, {"m": "2025/12", "v": 111.8}, {"m": "2026/1", "v": 112.1}, {"m": "2026/2", "v": 111.9}, {"m": "2026/3", "v": 111.6}, {"m": "2026/4", "v": 111.7}, {"m": "2026/5", "v": 111.3}, {"m": "2026/6", "v": 111.8}]};
+  const ciColors = { "一致指数": cssVar('--series-1'), "先行指数": cssVar('--series-2'), "遅行指数": cssVar('--series-3') };
+  const ciSeries = Object.keys(ciData).map(name => ({
+    name, color: ciColors[name],
+    points: ciData[name].map(d => ({ y: d.v, label: d.m }))
+  }));
+  renderLineChart(document.getElementById('ci-chart'), ciSeries, {
+    width: 760, height: 260, padR: 60, labelEvery: 3,
+    yfmt: v => v.toFixed(0), tipfmt: v => v.toFixed(1),
+    endLabel: (s, last) => `${s.name} ${last.y.toFixed(1)}`,
+  });
+  const ciLegend = document.getElementById('ci-legend');
+  ciSeries.forEach(s => {
+    const item = document.createElement('span'); item.className = 'lg-item';
+    const key = document.createElement('span'); key.className = 'lg-key'; key.style.background = s.color;
+    const label = document.createElement('span'); label.textContent = s.name;
+    item.appendChild(key); item.appendChild(label); ciLegend.appendChild(item);
+  });
+
+  const diData = {"先行指数": {"m": "2026/6", "v": 60.0}, "一致指数": {"m": "2026/6", "v": 72.2}, "遅行指数": {"m": "2026/6", "v": 37.5}};
+  const diOrder = ["先行指数", "一致指数", "遅行指数"];
+  const gaugeRow = document.getElementById('di-gauges');
+  diOrder.forEach(name => {
+    const d = diData[name];
+    if (!d) return;
+    const v = d.v;
+    const expand = v >= 50;
+    const card = document.createElement('div');
+    card.className = 'gauge-card';
+    card.innerHTML = `
+      <div class="gauge-top"><span class="gauge-name">DI ${name}</span><span class="gauge-value">${v.toFixed(1)}</span></div>
+      <div class="gauge-track"><div class="gauge-fill ${expand ? 'expand' : 'contract'}" style="width:${v}%"></div><div class="gauge-mid-tick"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="gauge-note">${d.m}分</span>
+        <span class="gauge-status ${expand ? 'expand' : 'contract'}">${expand ? '拡大目安（>50）' : '後退目安（<50）'}</span>
+      </div>`;
+    gaugeRow.appendChild(card);
+  });
+
+  const nikkeiSample = [{"date": "2025-08-01", "value": 40839.39}, {"date": "2025-08-08", "value": 40902.95}, {"date": "2025-08-15", "value": 43005.1}, {"date": "2025-08-22", "value": 43078.52}, {"date": "2025-08-29", "value": 42653.95}, {"date": "2025-09-05", "value": 42407.44}, {"date": "2025-09-12", "value": 44016.28}, {"date": "2025-09-19", "value": 45010.47}, {"date": "2025-09-26", "value": 45558.47}, {"date": "2025-10-03", "value": 45046.69}, {"date": "2025-10-10", "value": 48059.97}, {"date": "2025-10-17", "value": 47594.97}, {"date": "2025-10-24", "value": 49150.12}, {"date": "2025-10-31", "value": 51155.22}, {"date": "2025-11-07", "value": 50717.38}, {"date": "2025-11-14", "value": 50895.27}, {"date": "2025-11-21", "value": 49202.88}, {"date": "2025-11-28", "value": 49659.9}, {"date": "2025-12-05", "value": 49998.34}, {"date": "2025-12-12", "value": 50565.04}, {"date": "2025-12-19", "value": 49514.48}, {"date": "2025-12-26", "value": 50463.51}, {"date": "2026-01-02", "value": 50433.2}, {"date": "2026-01-09", "value": 51874.0}, {"date": "2026-01-16", "value": 53984.27}, {"date": "2026-01-23", "value": 53377.01}, {"date": "2026-01-30", "value": 53255.19}, {"date": "2026-02-06", "value": 53948.18}, {"date": "2026-02-13", "value": 57149.07}, {"date": "2026-02-20", "value": 56962.05}, {"date": "2026-02-27", "value": 58376.97}, {"date": "2026-03-06", "value": 55896.15}, {"date": "2026-03-13", "value": 54055.01}, {"date": "2026-03-20", "value": 54015.87}, {"date": "2026-03-27", "value": 52898.82}, {"date": "2026-04-03", "value": 52455.2}, {"date": "2026-04-10", "value": 55194.22}, {"date": "2026-04-17", "value": 58101.73}, {"date": "2026-04-24", "value": 59323.27}, {"date": "2026-05-01", "value": 59813.22}, {"date": "2026-05-08", "value": 62773.75}, {"date": "2026-05-15", "value": 62499.18}, {"date": "2026-05-22", "value": 61238.83}, {"date": "2026-05-29", "value": 65235.26}, {"date": "2026-06-05", "value": 67225.9}, {"date": "2026-06-12", "value": 64771.56}, {"date": "2026-06-19", "value": 70185.56}, {"date": "2026-06-26", "value": 70608.91}, {"date": "2026-07-03", "value": 69696.52}, {"date": "2026-07-10", "value": 68223.06}, {"date": "2026-07-17", "value": 66942.88}, {"date": "2026-07-24", "value": 65845.39}, {"date": "2026-07-31", "value": 62991.95}, {"date": "2026-08-07", "value": 65060.57}, {"date": "2026-08-14", "value": 67879.17}, {"date": "2026-08-21", "value": 66848.11}, {"date": "2026-08-28", "value": 66036.84}];
+  const nikkeiSeries = [{ name: '日経平均株価', color: cssVar('--accent'), points: nikkeiSample.map(d => ({ y: d.value, label: d.date.slice(2).replace('-', '/') })) }];
+  renderLineChart(document.getElementById('nikkei-chart'), nikkeiSeries, {
+    width: 760, height: 240, padR: 70, labelEvery: 8,
+    yfmt: v => Math.round(v).toLocaleString(), tipfmt: v => Math.round(v).toLocaleString() + '円',
+    endLabel: (s, last) => Math.round(last.y).toLocaleString() + '円',
+  });
+
+  const cfnaiRaw = [{"date": "2025-01-01", "value": -0.5}, {"date": "2025-02-01", "value": 0.39}, {"date": "2025-03-01", "value": 0.16}, {"date": "2025-04-01", "value": -0.36}, {"date": "2025-05-01", "value": -0.31}, {"date": "2025-06-01", "value": -0.09}, {"date": "2025-07-01", "value": 0.02}, {"date": "2025-08-01", "value": -0.35}, {"date": "2025-09-01", "value": -0.32}, {"date": "2025-10-01", "value": -0.5}, {"date": "2025-11-01", "value": -0.31}, {"date": "2025-12-01", "value": -0.06}, {"date": "2026-01-01", "value": -0.07}, {"date": "2026-02-01", "value": 0.22}, {"date": "2026-03-01", "value": -0.11}, {"date": "2026-04-01", "value": 0.1}, {"date": "2026-05-01", "value": -0.12}, {"date": "2026-06-01", "value": 0.06}, {"date": "2026-07-01", "value": -0.08}];
+  const cfnaiMa3 = [{"date": "2025-01-01", "value": -0.07}, {"date": "2025-02-01", "value": 0.07}, {"date": "2025-03-01", "value": 0.01}, {"date": "2025-04-01", "value": 0.06}, {"date": "2025-05-01", "value": -0.17}, {"date": "2025-06-01", "value": -0.25}, {"date": "2025-07-01", "value": -0.13}, {"date": "2025-08-01", "value": -0.14}, {"date": "2025-09-01", "value": -0.22}, {"date": "2025-10-01", "value": -0.39}, {"date": "2025-11-01", "value": -0.37}, {"date": "2025-12-01", "value": -0.29}, {"date": "2026-01-01", "value": -0.15}, {"date": "2026-02-01", "value": 0.03}, {"date": "2026-03-01", "value": 0.01}, {"date": "2026-04-01", "value": 0.07}, {"date": "2026-05-01", "value": -0.04}, {"date": "2026-06-01", "value": 0.01}, {"date": "2026-07-01", "value": -0.04}];
+  const cfnaiSeries = [
+    { name: 'CFNAI（月次）', color: cssVar('--series-2'), points: cfnaiRaw.map(d => ({ y: d.value, label: d.date })) },
+    { name: 'CFNAI-MA3（3か月平均）', color: cssVar('--series-1'), points: cfnaiMa3.map(d => ({ y: d.value, label: d.date })) },
+  ];
+  renderLineChart(document.getElementById('cfnai-chart'), cfnaiSeries, {
+    width: 760, height: 240, padR: 60, labelEvery: 3,
+    yfmt: v => v.toFixed(1), tipfmt: v => v.toFixed(2), endLabel: (s, last) => last.y.toFixed(2),
+  });
+  const cfnaiLegend = document.getElementById('cfnai-legend');
+  cfnaiSeries.forEach(s => {
+    const item = document.createElement('span'); item.className = 'lg-item';
+    const key = document.createElement('span'); key.className = 'lg-key'; key.style.background = s.color;
+    const label = document.createElement('span'); label.textContent = s.name;
+    item.appendChild(key); item.appendChild(label); cfnaiLegend.appendChild(item);
+  });
+
+  const sp500Sample = [{"date": "2025-01-03", "value": 5899.9}, {"date": "2025-01-10", "value": 5907.43}, {"date": "2025-01-17", "value": 5912.61}, {"date": "2025-01-24", "value": 6088.89}, {"date": "2025-01-31", "value": 6046.2}, {"date": "2025-02-07", "value": 6040.7}, {"date": "2025-02-14", "value": 6083.32}, {"date": "2025-02-21", "value": 6101.1}, {"date": "2025-02-28", "value": 5942.13}, {"date": "2025-03-07", "value": 5795.84}, {"date": "2025-03-14", "value": 5589.28}, {"date": "2025-03-21", "value": 5659.1}, {"date": "2025-03-28", "value": 5706.13}, {"date": "2025-04-04", "value": 5477.3}, {"date": "2025-04-11", "value": 5226.67}, {"date": "2025-04-18", "value": 5340.25}, {"date": "2025-04-25", "value": 5366.36}, {"date": "2025-05-02", "value": 5589.89}, {"date": "2025-05-09", "value": 5642.48}, {"date": "2025-05-16", "value": 5899.73}, {"date": "2025-05-23", "value": 5878.7}, {"date": "2025-05-30", "value": 5908.49}, {"date": "2025-06-06", "value": 5963.36}, {"date": "2025-06-13", "value": 6017.83}, {"date": "2025-06-20", "value": 5991.14}, {"date": "2025-06-27", "value": 6104.72}, {"date": "2025-07-04", "value": 6227.43}, {"date": "2025-07-11", "value": 6251.79}, {"date": "2025-07-18", "value": 6274.03}, {"date": "2025-07-25", "value": 6345.22}, {"date": "2025-08-01", "value": 6340.19}, {"date": "2025-08-08", "value": 6340.73}, {"date": "2025-08-15", "value": 6440.83}, {"date": "2025-08-22", "value": 6418.68}, {"date": "2025-08-29", "value": 6469.76}, {"date": "2025-09-05", "value": 6461.85}, {"date": "2025-09-12", "value": 6542.31}, {"date": "2025-09-19", "value": 6623.74}, {"date": "2025-09-26", "value": 6647.41}, {"date": "2025-10-03", "value": 6698.4}, {"date": "2025-10-10", "value": 6699.24}, {"date": "2025-10-17", "value": 6652.63}, {"date": "2025-10-24", "value": 6740.0}, {"date": "2025-10-31", "value": 6863.84}, {"date": "2025-11-07", "value": 6773.79}, {"date": "2025-11-14", "value": 6800.31}, {"date": "2025-11-21", "value": 6614.73}, {"date": "2025-11-28", "value": 6783.18}, {"date": "2025-12-05", "value": 6843.85}, {"date": "2025-12-12", "value": 6860.42}, {"date": "2025-12-19", "value": 6789.49}, {"date": "2025-12-26", "value": 6912.57}, {"date": "2026-01-02", "value": 6876.49}, {"date": "2026-01-09", "value": 6931.11}, {"date": "2026-01-16", "value": 6950.42}, {"date": "2026-01-23", "value": 6875.36}, {"date": "2026-01-30", "value": 6962.98}, {"date": "2026-02-06", "value": 6901.53}, {"date": "2026-02-13", "value": 6903.41}, {"date": "2026-02-20", "value": 6873.98}, {"date": "2026-02-27", "value": 6892.34}, {"date": "2026-03-06", "value": 6827.7}, {"date": "2026-03-13", "value": 6731.62}, {"date": "2026-03-20", "value": 6630.63}, {"date": "2026-03-27", "value": 6515.06}, {"date": "2026-04-03", "value": 6507.56}, {"date": "2026-04-10", "value": 6730.61}, {"date": "2026-04-17", "value": 7008.78}, {"date": "2026-04-24", "value": 7116.91}, {"date": "2026-05-01", "value": 7177.56}, {"date": "2026-05-08", "value": 7312.23}, {"date": "2026-05-15", "value": 7433.56}, {"date": "2026-05-22", "value": 7421.76}, {"date": "2026-05-29", "value": 7545.79}, {"date": "2026-06-05", "value": 7546.29}, {"date": "2026-06-12", "value": 7377.03}, {"date": "2026-06-19", "value": 7496.58}, {"date": "2026-06-26", "value": 7381.6}, {"date": "2026-07-03", "value": 7476.57}, {"date": "2026-07-10", "value": 7528.6}, {"date": "2026-07-17", "value": 7524.56}, {"date": "2026-07-24", "value": 7454.34}, {"date": "2026-07-31", "value": 7417.09}, {"date": "2026-08-07", "value": 7705.63}, {"date": "2026-08-14", "value": 7762.91}, {"date": "2026-08-21", "value": 7692.07}, {"date": "2026-08-28", "value": 7689.72}];
+  const sp500Series = [{ name: 'S&P500', color: cssVar('--accent'), points: sp500Sample.map(d => ({ y: d.value, label: d.date.slice(2).replace('-', '/') })) }];
+  renderLineChart(document.getElementById('sp500-chart'), sp500Series, {
+    width: 760, height: 220, padR: 60, labelEvery: 8,
+    yfmt: v => Math.round(v).toLocaleString(), tipfmt: v => Math.round(v).toLocaleString(),
+    endLabel: (s, last) => Math.round(last.y).toLocaleString(),
+  });
+
+  
+  (function () {
+    const pts = [{"date": "2024-01-01", "value": 47.4}, {"date": "2024-02-01", "value": 50.3}, {"date": "2024-03-01", "value": 52.4}, {"date": "2024-04-01", "value": 50.2}, {"date": "2024-05-01", "value": 46.8}, {"date": "2024-06-01", "value": 47.3}, {"date": "2024-07-01", "value": 48.3}, {"date": "2024-08-01", "value": 48.3}, {"date": "2024-09-01", "value": 47.6}, {"date": "2024-10-01", "value": 46.6}, {"date": "2024-11-01", "value": 48.2}, {"date": "2024-12-01", "value": 49.0}, {"date": "2025-01-01", "value": 45.5}, {"date": "2025-02-01", "value": 45.1}, {"date": "2025-03-01", "value": 47.8}, {"date": "2025-04-01", "value": 44.6}, {"date": "2025-05-01", "value": 44.8}, {"date": "2025-06-01", "value": 45.1}, {"date": "2025-07-01", "value": 45.5}, {"date": "2025-08-01", "value": 46.3}, {"date": "2025-09-01", "value": 46.6}, {"date": "2025-10-01", "value": 48.5}, {"date": "2025-11-01", "value": 48.0}, {"date": "2025-12-01", "value": 48.5}, {"date": "2026-01-01", "value": 45.4}, {"date": "2026-02-01", "value": 48.2}, {"date": "2026-03-01", "value": 44.7}, {"date": "2026-04-01", "value": 41.6}, {"date": "2026-05-01", "value": 43.1}, {"date": "2026-06-01", "value": 43.5}, {"date": "2026-07-01", "value": 45.8}];
+    if (!pts.length) return;
+    const series = [{ name: '景気ウォッチャー調査 現状判断DI（全国・全分野）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-chart-0'), series, {
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2024-01-01", "value": 7.1}, {"date": "2024-04-01", "value": 9.7}, {"date": "2024-07-01", "value": 6.1}, {"date": "2024-10-01", "value": 7.2}, {"date": "2025-01-01", "value": 7.0}, {"date": "2025-04-01", "value": 9.6}, {"date": "2025-07-01", "value": 7.3}, {"date": "2025-10-01", "value": 7.5}, {"date": "2026-01-01", "value": 8.0}];
+    if (!pts.length) return;
+    const series = [{ name: '売上高経常利益率（全産業except金融保険業・全規模）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-chart-1'), series, {
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      yfmt: v => v.toFixed(1),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2024-01-01", "value": 835842.33346}, {"date": "2024-02-01", "value": 881182.7375}, {"date": "2024-03-01", "value": 895485.08407}, {"date": "2024-04-01", "value": 875581.04059}, {"date": "2024-05-01", "value": 860164.15709}, {"date": "2024-06-01", "value": 874428.59326}, {"date": "2024-07-01", "value": 876135.24474}, {"date": "2024-08-01", "value": 871779.18059}, {"date": "2024-09-01", "value": 863102.24536}, {"date": "2024-10-01", "value": 870726.61067}, {"date": "2024-11-01", "value": 903131.52931}, {"date": "2024-12-01", "value": 885126.71592}, {"date": "2025-01-01", "value": 867461.54461}, {"date": "2025-02-01", "value": 895046.18113}, {"date": "2025-03-01", "value": 989434.95408}, {"date": "2025-04-01", "value": 917406.47558}, {"date": "2025-05-01", "value": 915254.97434}, {"date": "2025-06-01", "value": 936048.56205}, {"date": "2025-07-01", "value": 906405.23936}, {"date": "2025-08-01", "value": 903152.35687}, {"date": "2025-09-01", "value": 931808.97835}, {"date": "2025-10-01", "value": 985965.92879}, {"date": "2025-11-01", "value": 895644.34265}, {"date": "2025-12-01", "value": 1039968.83779}, {"date": "2026-01-01", "value": 982428.4098}, {"date": "2026-02-01", "value": 1115865.90544}, {"date": "2026-03-01", "value": 1010890.92006}, {"date": "2026-04-01", "value": 1098510.48004}, {"date": "2026-05-01", "value": 961973.8173}, {"date": "2026-06-01", "value": 1055761.76106}];
+    if (!pts.length) return;
+    const series = [{ name: 'コア機械受注（民需、船舶・電力除く、季調系列）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-chart-2'), series, {
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2024-01-01", "value": 2.4}, {"date": "2024-02-01", "value": 2.6}, {"date": "2024-03-01", "value": 2.7}, {"date": "2024-04-01", "value": 2.8}, {"date": "2024-05-01", "value": 2.8}, {"date": "2024-06-01", "value": 2.6}, {"date": "2024-07-01", "value": 2.7}, {"date": "2024-08-01", "value": 2.5}, {"date": "2024-09-01", "value": 2.5}, {"date": "2024-10-01", "value": 2.4}, {"date": "2024-11-01", "value": 2.4}, {"date": "2024-12-01", "value": 2.2}, {"date": "2025-01-01", "value": 2.3}, {"date": "2025-02-01", "value": 2.4}, {"date": "2025-03-01", "value": 2.6}, {"date": "2025-04-01", "value": 2.7}, {"date": "2025-05-01", "value": 2.6}, {"date": "2025-06-01", "value": 2.5}, {"date": "2025-07-01", "value": 2.4}, {"date": "2025-08-01", "value": 2.6}, {"date": "2025-09-01", "value": 2.6}, {"date": "2025-10-01", "value": 2.6}, {"date": "2025-11-01", "value": 2.4}, {"date": "2025-12-01", "value": 2.4}, {"date": "2026-01-01", "value": 2.6}, {"date": "2026-02-01", "value": 2.6}, {"date": "2026-03-01", "value": 2.8}, {"date": "2026-04-01", "value": 2.7}, {"date": "2026-05-01", "value": 2.6}, {"date": "2026-06-01", "value": 2.5}, {"date": "2026-07-01", "value": 2.4}];
+    if (!pts.length) return;
+    const series = [{ name: '完全失業率（全国・総数）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-chart-3'), series, {
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      yfmt: v => v.toFixed(1),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2024-01-01", "value": 1243088.6}, {"date": "2024-02-01", "value": 1238711.1}, {"date": "2024-03-01", "value": 1244308.1}, {"date": "2024-04-01", "value": 1259989.0}, {"date": "2024-05-01", "value": 1258886.6}, {"date": "2024-06-01", "value": 1257442.0}, {"date": "2024-07-01", "value": 1256913.9}, {"date": "2024-08-01", "value": 1254835.1}, {"date": "2024-09-01", "value": 1251704.7}, {"date": "2024-10-01", "value": 1250064.1}, {"date": "2024-11-01", "value": 1254927.1}, {"date": "2024-12-01", "value": 1257603.6}, {"date": "2025-01-01", "value": 1259458.4}, {"date": "2025-02-01", "value": 1253231.2}, {"date": "2025-03-01", "value": 1254612.5}, {"date": "2025-04-01", "value": 1266178.3}, {"date": "2025-05-01", "value": 1267043.0}, {"date": "2025-06-01", "value": 1268127.6}, {"date": "2025-07-01", "value": 1269611.5}, {"date": "2025-08-01", "value": 1271230.3}, {"date": "2025-09-01", "value": 1270845.5}, {"date": "2025-10-01", "value": 1270197.5}, {"date": "2025-11-01", "value": 1276686.6}, {"date": "2025-12-01", "value": 1278911.5}, {"date": "2026-01-01", "value": 1279060.1}, {"date": "2026-02-01", "value": 1274737.8}, {"date": "2026-03-01", "value": 1279503.8}, {"date": "2026-04-01", "value": 1295620.4}, {"date": "2026-05-01", "value": 1298090.1}, {"date": "2026-06-01", "value": 1296125.0}, {"date": "2026-07-01", "value": 1297007.4}];
+    if (!pts.length) return;
+    const series = [{ name: 'マネーストックM2（平残）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-chart-4'), series, {
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+
+  document.querySelectorAll('.tabs-block').forEach(block => {
+    block.addEventListener('click', ev => {
+      const btn = ev.target.closest('.tab-btn');
+      if (!btn) return;
+      const id = btn.dataset.tab;
+      block.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      block.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === id));
+    });
+  });
+})();
+</script>
+</body>
+</html>

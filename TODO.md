@@ -113,7 +113,7 @@
 - [x] CLI（`evaluation/cli.py`。`--pdf --fiscal-period` / `--company --from --to`、`--model` `--industry-model`）
 - [x] ユニットテスト 42 件（schema/llm/prompt/report/retrieval/classify。`tests/`、ruff 通過）
 - [x] **準ライブ end-to-end 実行**（森永乳業。RAG＝実Chroma・評価＝実Gemini 3.1-pro。EDINET のみ手入力バイパス）
-- [ ] 完全ライブ実行（EDINET 実キー投入後に `evaluation.cli --company` で通す）
+- [x] **完全ライブ実行 completed（2026-08-30）** — EDINET・GOOGLE 実キー投入後、`uv run python -m evaluation.cli --company 森永乳業 --from 2025-06-01 --to 2025-06-30 --model gemini-flash-latest` で通し、総合判定「適格」（財務/事業/経営とも評点2）。`data/reports/森永乳業株式会社_2025-03-31.md`
 - [ ] 追加チューニング: 有報のリスク/MD&A 散文クエリはノイズ寄り（辞典は表主体）。重み下げ or 除外を検討
 - [ ] 別モデル比較（`--model claude-opus-5` 等。要 `uv sync --extra anthropic`）
 - [ ] Google Driveへの保存（Drive API）← Phase 1 の OAuth 設定待ち
@@ -144,6 +144,72 @@
 - [x] build_macro_context(fiscal_period, industry_key)（macro/context.py。決算期環境＋足元環境を併記、YoY算出。金利は差分%pt・他は変化率%。閏/データ範囲外も検証済 2026-08-27）
 - [ ] Phase4評価プロンプトへ接続（context.pyの出力を評価プロンプト冒頭に前置）
 - [ ] 更新: 手動始動 → Phase5でcron/Schedulerへ昇格
+
+## Phase 4.6: マクロ経済ページと個別株評価ページの分離（設計確定 2026-08-31）
+
+> grill-meで設計確定。現状は森永乳業のデータを使った統合HTML1枚（`data/reports/森永乳業株式会社_2025-03-31.html`）に
+> マクロ環境モニターと個別株評価が同居していたが、目的が異なる（マクロ＝指標に基づく大勢理解、個別株＝投資適格性の判断）ため
+> 2ページに分離する。モックアップ2枚をArtifactとして作成済み：
+> - マクロ経済モニター（企業非依存・日本/米国）: https://claude.ai/code/artifact/cc33315b-48c5-443e-9025-863dc01968a7
+> - 森永乳業 個別株評価（マクロは要約引用＋リンクのみ）: https://claude.ai/code/artifact/4ef8b309-d7b1-44df-9182-4b651ab6faa2
+
+**決定事項**
+- 成果物: モックアップで構成確定 → 引き続き `evaluation/report.py`・`macro/` パッケージ側の本実装に接続する
+- ページ関係: 個別株ページはマクロを要約引用（ミニチャート＋総合見立てピル）＋マクロページへのリンクのみ。詳細チャート・全指標はマクロページに一本化
+- マクロページの結論: 指標の事実提示に留めず、「拡大局面／巡航速度」等の総合見立て（トーン）まで踏み込んで記載する。ただし投資の売買判断（買い時/売り時）ではなく、あくまで景気循環そのものへの見立てに限定し、個別株ページの投資適格性判断とは役割を分離する
+- データフロー: マクロスナップショットJSON（`data/macro/*.json`）を独立したタイミング（**週次**）で更新・生成し、個別株評価はそのスナップショットを参照する。企業評価のたびにFRED/e-Statへ再アクセスしない
+- 公開順序: マクロページを先に生成・公開してURLを確定 → 個別株ページのマクロ要約カードへ埋め込む
+- ビジュアル: 両ページとも同一デザインシステム（帳簿/印鑑風）を継続。ページ種別による意匠の作り分けはしない
+- スコープ: 今回は森永乳業1社分のページ構造確定まで。複数企業の一覧/インデックスページはPhase 5（バッチ処理・nanoclaw統合）の将来項目として本フェーズには含めない
+- 個別株ページのミニチャートは「日経平均＋CI一致指数」を基本形としつつ、**業種に応じた関連セクター指標（生乳価格・飼料穀物価格等）をLLMが動的に選択**する仕組みを将来実装する（`evaluation/classify.py`の業種タームLLM抽出と同じパターン）。ただし収集するセクター指標そのものはユーザーが手動で決定する方針（未確定・後日確認）
+- マクロページの「総合見立て」もLLMが指標データから自動生成する仕組みとし、`evaluation/prompt.py`相当の生成パイプラインを`macro/`側にも新設する
+
+**ロードマップ（実装タスク）**
+
+> 実装完了メモ（2026-08-31）: 下記の主要タスクを実装・実データ/実LLMで動作検証済み。
+> `uv run python -m macro.report` → `data/macro/report.html`（マクロページ）生成 →
+> `uv run python -m evaluation.cli --pdf ... --fiscal-period 2025-03` で森永乳業を再評価し、
+> Markdownレポートに新設「## マクロ前提（詳細は別ページ）」節（総合見立て引用＋関連セクター指標＋
+> リンク）が実際に反映されることを確認。テスト21件追加（`test_narrative.py` `test_indicators.py`、
+> `test_report.py`にモック追加）、全63件（既存42＋新規21）通過・ruff通過。
+
+- [x] `macro/fetch_jp_market.py`（新規）/ `macro/fetch_us.py`（新規）: CI/DI（e-Stat statsDataId
+      0003446461、`estat.py`に`cd_tab`パラメータ追加）・日経平均・JP10年金利・CFNAI/CFNAI-MA3・
+      S&P500・US10年金利・FF金利・米CPI/コアCPI・米実質GDP成長率を取得し
+      `data/macro/{japan_market,us}.json`へ保存。実APIで動作確認済み。
+- [x] `macro/narrative.py`（新規）: 指標データ→LLM（既定`gemini-flash-latest`）で「読み方」パネル
+      （2〜3段落）＋「総合見立て」（tone: expand/neutral/contract＋日本語ラベル＋2〜3文）を生成。
+      数値の整形・期間内変化率の計算はコード側（LLMには数値を再計算させない）。ゼロ近傍で振動する
+      指数（CFNAI等）は変化率%ではなく絶対差（ポイント）で表現するよう補正済み。
+      `save_narratives`/`load_narratives`で`data/macro/narrative.json`にキャッシュし、
+      企業評価側がLLMを再呼び出しせず引用できるようにした。
+- [x] `macro/report.py`（新規）: `data/macro/*.json`＋narrativeからマクロページHTMLを生成
+      （日本・米国、CI/DIチャート・DIゲージ・日経平均/S&P500チャート・CFNAIチャート・基礎指標・
+      読み方・総合見立て）。grill-meで確定した帳簿/印鑑デザインシステムを踏襲。実データで生成・
+      タグバランス検証済み。
+- [x] `macro/indicators.py`（新規）: セクター指標カタログ（indicator_catalog.json）から、
+      業種タームをLLMで19区分の`industry_taxonomy`へ写像し関連指標を選択
+      （`evaluation/classify.py`と同じ「LLMは分類判定のみ、数値/URLは生成させない」設計）。
+      業種特化指標を優先、不足分は「全業種共通」で埋め合わせ。LLM失敗時は共通指標へフォールバック。
+- [x] `evaluation/report.py`にマクロ前提節を追加（`_macro_premise()`）。日本の総合見立て引用＋
+      関連セクター指標リスト＋`data/macro/report.html`へのリンク注記。ミニチャート（SVG）は
+      Markdownでは表現できないため見送り、HTML化はPhase 6の「レポートHTML化」でまとめて対応。
+- [ ] マクロスナップショットの週次更新パイプライン（cron/Scheduler、Phase 5と合流）— 手動実行は可能、自動化は未着手
+- [x] **セクター指標プールの定義・データソース検証 completed（2026-08-31）** — grill-meでユーザーが挙げた日本の公的統計・業界統計44種類を精査。「自殺者数」は投資適格性評価への直接引用がセンシティブなためプールから除外。「官公庁統計情報」「月例経済報告」「金融経済月報」「オルタナティブデータ」の4つは数値系列ではないため type: narrative/meta として別枠に分離。残り38指標について並列調査エージェント5組（WebSearch/WebFetch）でアクセス方法・頻度・難易度・関連業種（日本標準産業分類の大分類相当19区分）を検証し、`data/macro/indicator_catalog.json` として保存。
+  - e-Stat APIで機械的取得可能: 17/38（家計調査・商業動態統計・法人企業統計調査・労働力調査・CPI/東京都区部CPI・GDPデフレーター・建築着工統計・貿易統計 等）
+  - 日銀独自の時系列統計データ検索サイト（2026-02-18よりAPI機能を新規提供、キー不要）: 短観・企業物価指数・企業向けサービス価格指数・マネーストック・マネタリーベース・消費活動指数・国際収支統計
+  - 業界団体サイトでのPDF手動取得のみ: 百貨店協会・チェーンストア協会・JFA（コンビニ）・日本フードサービス協会・JADA/全軽自協（新車販売）・日工会（工作機械受注）・中小機構（中小企業景況調査）・TSR/TDB（倒産統計）
+  - 未解決: 消費総合指数（内閣府）は案内されているExcel直リンクが404で安定した機械可読ソース未確定、要追加調査
+- [x] **マクロページへのセクター指標カタログ表示 completed（2026-08-31）** — `indicator_catalog.json`の38指標全てに平易な解説（`description`）とテーマ別タブ区分（`tab`: 消費・小売11／企業活動・景況6／貿易・生産7／労働・物価8／不動産・金融6）を追記。`macro/report.py`にタブUI（純CSS+軽量JS、クリックで切替）を追加し、マクロページ（企業非依存）に全指標を解説つきで掲載。末尾に「森永乳業の個別株ページの場合」という実選択例（`macro/indicators.select_indicators()`を実際に呼んで表示）を小さく併記し、企業非依存の原則を保ったまま選択の仕組みを実感できるようにした。実データで生成・タグバランス検証済み。
+- [x] **分野別セクター指標の時系列取得・トレンド可視化 completed（2026-08-31）** — 5タブそれぞれの代表指標を実際にAPIで検証・取得し`data/macro/sectors.json`へ保存、マクロページの各タブ冒頭に実時系列トレンドチャートを追加。
+  - `macro/boj.py`（新規）: 日銀の新API（2026-02-18公開、`stat-search.boj.or.jp/api/v1/getDataCode`、キー不要）のクライアント。PDFマニュアルをpymupdfで解析しリクエスト形式を確認、getMetadataでマネーストックM2の系列コード（`MAM1NAM2M2MO`）を特定
+  - `macro/fetch_sectors.py`（新規）: 消費・小売＝景気ウォッチャー現状判断DI、企業活動・景況＝法人企業統計 売上高経常利益率（四半期、`0003060191`は1954年からの長期系列と判明）、貿易・生産＝コア機械受注（民需・船舶電力除く季調系列）、労働・物価＝完全失業率、不動産・金融＝マネーストックM2、を実データで取得
+  - `macro/estat.py`のget_stats_dataに`extra`パラメータ追加（cat02/cat03等、tab/cat01以外の分類軸を絞り込むため。完全失業率取得で必要になった）
+  - `macro/report.py`にタブごとのミニトレンドチャート（renderLineChart再利用）を追加。法人企業景気予測調査（短観含む）は四半期ごとに別々の統計表IDが発番される方式でe-Stat検索が非常に遅く、継続時系列としての取得を断念し代替指標（売上高経常利益率）に切替
+  - 残り33指標（38指標中5指標のみ実装）は将来の拡張対象。特に業界団体PDF系・J-Quants登録要のものは優先度低
+- [ ] 各データソースの実装拡張（e-Stat以外の残り指標。業界団体PDF系は優先度低・後回し）
+- [ ] 指標選択ロジックのチューニング: 実行時に「森永乳業（乳製品製造業）」に対し関連の薄い「鉱工業指数（鉄鋼業）」が選ばれるケースを確認。LLMのカテゴリ判定プロンプトの精度改善が必要
+- [ ] 複数企業の一覧/インデックスページ（Phase 5の将来項目）
 
 ## Phase 6: 精度改善・運用
 
@@ -230,7 +296,7 @@
 | Phase 1: インフラ | ⏳ ほぼ未着手 | EDINET登録・Python環境のみ完了。GCP VM / Vertex AI / Drive OAuth / nanoclaw が残 |
 | Phase 2: 審査辞典RAG化 | ✅ 完了 | 全1600項目インデックス済み・GCS 正本化済み。残タスクは entries 投入（下記 項目2）のみ |
 | Phase 3: EDINET取得 | ✅ ほぼ完了 | 取得〜テキスト抽出〜業種材料抽出まで検証済み。業種分類キー確定は entries 投入待ち |
-| Phase 4: 評価エンジン | 🟢 準ライブ実行OK | `evaluation/` 一式（業種判定/2段階RAG/プロンプト/LLM層/レポート/CLI）実装・42テスト・森永乳業で準ライブ検証済み。EDINET 実キー投入で完全ライブ／散文クエリのチューニングが残 |
+| Phase 4: 評価エンジン | 🟢 完全ライブ実行OK | `evaluation/` 一式（業種判定/2段階RAG/プロンプト/LLM層/レポート/CLI）実装・42テスト・森永乳業で完全ライブ実行済み（2026-08-30、`gemini-flash-latest`）。散文クエリのチューニングが残 |
 | Phase 4.5: マクロ経済 | 🟡 全体系＋Phase4配線済み | 全体系4指標取得済み＋`macro.context` を評価プロンプト冒頭に前置（1a 完了・実出力で反映確認）。業種別DI/IIP が残 |
 | Phase 5: nanoclaw統合 | ⬜ 未着手 | Phase 4 完了後 |
 | Phase 6: 精度改善・運用 | ⬜ 未着手 | |
@@ -241,10 +307,10 @@
 
 1. **Phase 4 の完全ライブ化と精度チューニング** — 準ライブ（森永乳業）まで完了
    - **1a〜1d.** ✅ 完了: マクロ前置 / 2段階RAG＋業種判定 / プロンプト・スキーマ / Markdown レポート
-   - **1e.** ⬜ **次**: EDINET 実キーを `.env` に入れて `uv run python -m evaluation.cli --company 森永乳業
-     --from 2025-06-01 --to 2025-06-30` を通し、実有報テキストでの抽出（事業等のリスク/MD&A の見出し
-     ヒット率）と出力品質を確認
-   - **1f.** ⬜ チューニング: 散文クエリ（有報リスク/MD&A）は辞典（表主体）に対してノイズ寄り。
+   - **1e.** ✅ 完了（2026-08-30）: EDINET・GOOGLE 実キーを `.env` に投入し `uv run python -m
+     evaluation.cli --company 森永乳業 --from 2025-06-01 --to 2025-06-30 --model gemini-flash-latest`
+     を実行。森永乳業2025年3月期・総合判定「適格」のレポート生成を確認（`data/reports/`）
+   - **1f.** ⬜ **次**: チューニング: 散文クエリ（有報リスク/MD&A）は辞典（表主体）に対してノイズ寄り。
      重み下げ／除外、`n_evidence` と truncate 上限、業種タームの絞り方を調整
    - **1g.** ⬜ 別モデル比較（`--model claude-opus-5` / `gpt-*`。要 optional-deps とキー）
 
@@ -259,10 +325,9 @@
 4. **Phase 1: インフラ（GCP VM / Vertex AI / Drive OAuth / nanoclaw）** — Phase 4 が動いてから
 
 5. **運用**：マクロ更新を手動 → Phase 5 で cron/Scheduler 昇格、レポート HTML 化 + Vercel 配信
+6. **Phase 4.6: マクロ/個別株ページ分離の本実装** — ✅ 主要タスク実装・実データ/実LLM検証済み（2026-08-31）。`macro/fetch_jp_market.py` `macro/fetch_us.py` `macro/narrative.py` `macro/report.py` `macro/indicators.py` 新設、`evaluation/report.py` にマクロ前提節を追加、テスト21件追加（計63件通過）。残: 週次自動更新パイプライン・指標選択ロジックのチューニング・日銀API連携（詳細はPhase 4.6セクション参照）
 
 ### 既知のブロッカー / 依存
-- **1e（完全ライブ）は EDINET 実キー待ち** — この環境の `.env` はプレースホルダー。実キーを入れれば即実行可
-  （API 課金: EDINET 無料 + 業種判定 flash 数円 + 評価 gemini-3.1-pro 1 社あたり十数円想定）
 - 項目2（entries 投入）が終わると 1b の RAG precision（`resolve_filter` 有効化）と業種別DI/IIP（項目3）の両方が前進
 - Drive 保存は Phase 1 の OAuth 設定待ち
 - Chroma は `make chroma-pull` でどのデバイスからも取得可（GCS 正本アップロード済み）

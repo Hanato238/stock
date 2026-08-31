@@ -1,6 +1,18 @@
 """Markdown レポート生成。"""
 
+import pytest
+
 from evaluation.report import _slug, render_markdown, save_report
+
+
+@pytest.fixture(autouse=True)
+def _no_live_macro_calls(monkeypatch):
+    """_macro_premise() が実際に LLM/ファイルI/Oへ飛ばないようにする（macro側は別途テスト済み）。"""
+    from macro import indicators as macro_indicators
+    from macro import narrative as macro_narrative
+
+    monkeypatch.setattr(macro_narrative, "load_narratives", lambda: None)
+    monkeypatch.setattr(macro_indicators, "select_indicators", lambda *a, **k: [])
 
 
 def test_render_markdown_structure(bundle):
@@ -40,3 +52,35 @@ def test_save_report_writes_file(bundle, tmp_path):
 def test_slug_removes_path_chars():
     assert _slug("A/B:C 社") == "ABC社"
     assert _slug("  ") == "company"
+
+
+def test_macro_premise_shows_fallback_when_narrative_missing(bundle):
+    md = render_markdown(bundle)
+    assert "## マクロ前提（詳細は別ページ）" in md
+    assert "マクロ経済モニター未生成" in md
+
+
+def test_macro_premise_quotes_narrative_and_indicators(monkeypatch, bundle):
+    from macro import indicators as macro_indicators
+    from macro import narrative as macro_narrative
+    from macro.narrative import MacroNarrative, NarrativeParagraph
+
+    narrative = MacroNarrative(
+        region="japan",
+        tone="expand",
+        tone_label="緩やかな拡大局面",
+        paragraphs=[NarrativeParagraph(heading="景気動向指数", body="CI一致指数は118.5。")],
+        verdict="拡大局面が続いている。",
+        model="gemini-flash-latest",
+    )
+    monkeypatch.setattr(macro_narrative, "load_narratives", lambda: {"japan": narrative, "us": narrative})
+    monkeypatch.setattr(
+        macro_indicators,
+        "select_indicators",
+        lambda terms, **k: [{"name_ja": "商業動態統計", "publisher": "経済産業省", "frequency": "月次"}],
+    )
+
+    md = render_markdown(bundle)
+    assert "緩やかな拡大局面" in md
+    assert "拡大局面が続いている。" in md
+    assert "商業動態統計（経済産業省、月次）" in md

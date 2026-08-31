@@ -49,6 +49,8 @@ def render_markdown(bundle: EvaluationBundle, *, include_evidence: bool = True) 
         "## マクロ経済環境（評価前提）",
         "",
         bundle.macro_block.strip(),
+        "",
+        _macro_premise(bundle),
     ]
     if include_evidence:
         parts += ["", _evidence_appendix(bundle)]
@@ -81,6 +83,50 @@ def _watch_items(r: EvaluationResult) -> str:
         lines.append(w.detail or "（詳細なし）")
         lines.append("")
     return "\n".join(lines).rstrip()
+
+
+def _macro_premise(bundle: EvaluationBundle) -> str:
+    """マクロ経済モニター（Phase 4.6）への要約引用＋リンク。
+
+    LLM は呼ばない: 総合見立ては macro.report が生成時に data/macro/narrative.json
+    へ保存済みのものを読むだけ。関連セクター指標は業種タームから軽量 LLM で1回だけ
+    選ぶ（evaluation.classify と同じ、失敗しても評価本体は止めない設計）。
+    """
+    lines = ["## マクロ前提（詳細は別ページ）", ""]
+
+    try:
+        from macro.narrative import load_narratives
+
+        narratives = load_narratives()
+    except ImportError:
+        narratives = None
+
+    if narratives and "japan" in narratives:
+        n = narratives["japan"]
+        lines.append(f"**日本の景気サイクル総合見立て:** {n.tone_label}")
+        lines.append("")
+        lines.append(n.verdict or "（見立てなし）")
+        lines.append("")
+    else:
+        lines.append("（マクロ経済モニター未生成。`uv run python -m macro.report` で生成すると要約が表示されます）")
+        lines.append("")
+
+    try:
+        from macro.indicators import IndicatorSelectionError, select_indicators
+
+        indicators = select_indicators(bundle.industry_terms) if bundle.industry_terms else []
+    except (ImportError, IndicatorSelectionError):
+        indicators = []
+
+    if indicators:
+        lines.append("**関連セクター指標（業種に応じて自動選択）:**")
+        lines.append("")
+        for ind in indicators:
+            lines.append(f"- {ind['name_ja']}（{ind.get('publisher', '不明')}、{ind.get('frequency', '')}）")
+        lines.append("")
+
+    lines.append("詳細な景気動向指数（CI/DI）・CFNAI・株式市場チャート等は `data/macro/report.html` を参照。")
+    return "\n".join(lines)
 
 
 def _evidence_appendix(bundle: EvaluationBundle) -> str:
