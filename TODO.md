@@ -114,7 +114,7 @@
 - [x] ユニットテスト 42 件（schema/llm/prompt/report/retrieval/classify。`tests/`、ruff 通過）
 - [x] **準ライブ end-to-end 実行**（森永乳業。RAG＝実Chroma・評価＝実Gemini 3.1-pro。EDINET のみ手入力バイパス）
 - [x] **完全ライブ実行 completed（2026-08-30）** — EDINET・GOOGLE 実キー投入後、`uv run python -m evaluation.cli --company 森永乳業 --from 2025-06-01 --to 2025-06-30 --model gemini-flash-latest` で通し、総合判定「適格」（財務/事業/経営とも評点2）。`data/reports/森永乳業株式会社_2025-03-31.md`
-- [ ] 追加チューニング: 有報のリスク/MD&A 散文クエリはノイズ寄り（辞典は表主体）。重み下げ or 除外を検討
+- [x] **追加チューニング completed（2026-09-01）** — 有報のリスク/MD&A 散文クエリは辞典（表主体）に対しノイズ寄りな問題に対応。`evaluation/retrieval.py`: 散文クエリの取得件数を絞り込み（`_PROSE_PER_QUERY_K=3` vs 通常`_PER_QUERY_K=6`）、最終選定時に散文由来ヒットへ距離ペナルティ（`_PROSE_DISTANCE_PENALTY=0.08`）を課して業種タームクエリの結果を優先（ただし除外はせず、他に候補が無ければ保険として残す）。選定ロジックを`_select_evidence()`として純粋関数に切り出しユニットテスト5件追加。
 - [ ] 別モデル比較（`--model claude-opus-5` 等。要 `uv sync --extra anthropic`）
 - [ ] Google Driveへの保存（Drive API）← Phase 1 の OAuth 設定待ち
 
@@ -194,7 +194,22 @@
 - [x] `evaluation/report.py`にマクロ前提節を追加（`_macro_premise()`）。日本の総合見立て引用＋
       関連セクター指標リスト＋`data/macro/report.html`へのリンク注記。ミニチャート（SVG）は
       Markdownでは表現できないため見送り、HTML化はPhase 6の「レポートHTML化」でまとめて対応。
-- [ ] マクロスナップショットの週次更新パイプライン（cron/Scheduler、Phase 5と合流）— 手動実行は可能、自動化は未着手
+- [x] **マクロスナップショット更新の1コマンド化 completed（2026-09-01）** — `macro/refresh.py`（新規）で
+      `fetch_jp_market → fetch（overall: FRED+CPI）→ fetch_us → fetch_sectors → report` の5回の手動実行を
+      `uv run python -m macro.refresh`（`make macro-refresh`）1コマンドに統合。1ステップが失敗しても
+      （例: 一部APIキー未設定、e-Statの一時的な不通）残りのステップは続行し、最後に成否を一覧表示・
+      失敗があれば非ゼロ終了。失敗したステップはファイルを書き換えないため前回キャッシュのまま残る。
+      実データで実行確認済み（1回目は`report`ステップのみGeminiの一時的なJSON崩れで失敗→再実行で成功、
+      他4ステップとの独立性を実地確認）。cron/Scheduler化（Phase 5）の実行単位はこのコマンドを想定。
+- [x] **5分野タブのLLM解説文 completed（2026-09-01）** — grill-meで設計確定。各分野（消費・小売／
+      企業活動・景況／貿易・生産／労働・物価／不動産・金融）の代表指標の動きを80〜150字で解説する
+      文章を追加（`macro/narrative.py`の`generate_sector_narratives()`。1回のLLM呼び出しで5分野分を
+      まとめて生成、分野同士は独立に評釈し国レベルのtoneとは整合を取らない設計）。
+      `save_sector_narratives()`/`load_sector_narratives()`で`narrative.json`の`sectors`キーに保存
+      （既存の`save_narratives()`/`load_narratives()`とはマージ安全・どちらが先でも相手を消さない）。
+      `macro/report.py`の各タブチャートに解説段落を追加、`evaluation/report.py`のマクロ前提節でも
+      選択されたセクター指標をタブごとにグルーピングして解説を1回だけ引用するよう変更。
+      実データ・実LLMで生成確認済み。テスト7件追加。
 - [x] **セクター指標プールの定義・データソース検証 completed（2026-08-31）** — grill-meでユーザーが挙げた日本の公的統計・業界統計44種類を精査。「自殺者数」は投資適格性評価への直接引用がセンシティブなためプールから除外。「官公庁統計情報」「月例経済報告」「金融経済月報」「オルタナティブデータ」の4つは数値系列ではないため type: narrative/meta として別枠に分離。残り38指標について並列調査エージェント5組（WebSearch/WebFetch）でアクセス方法・頻度・難易度・関連業種（日本標準産業分類の大分類相当19区分）を検証し、`data/macro/indicator_catalog.json` として保存。
   - e-Stat APIで機械的取得可能: 17/38（家計調査・商業動態統計・法人企業統計調査・労働力調査・CPI/東京都区部CPI・GDPデフレーター・建築着工統計・貿易統計 等）
   - 日銀独自の時系列統計データ検索サイト（2026-02-18よりAPI機能を新規提供、キー不要）: 短観・企業物価指数・企業向けサービス価格指数・マネーストック・マネタリーベース・消費活動指数・国際収支統計
@@ -206,9 +221,87 @@
   - `macro/fetch_sectors.py`（新規）: 消費・小売＝景気ウォッチャー現状判断DI、企業活動・景況＝法人企業統計 売上高経常利益率（四半期、`0003060191`は1954年からの長期系列と判明）、貿易・生産＝コア機械受注（民需・船舶電力除く季調系列）、労働・物価＝完全失業率、不動産・金融＝マネーストックM2、を実データで取得
   - `macro/estat.py`のget_stats_dataに`extra`パラメータ追加（cat02/cat03等、tab/cat01以外の分類軸を絞り込むため。完全失業率取得で必要になった）
   - `macro/report.py`にタブごとのミニトレンドチャート（renderLineChart再利用）を追加。法人企業景気予測調査（短観含む）は四半期ごとに別々の統計表IDが発番される方式でe-Stat検索が非常に遅く、継続時系列としての取得を断念し代替指標（売上高経常利益率）に切替
-  - 残り33指標（38指標中5指標のみ実装）は将来の拡張対象。特に業界団体PDF系・J-Quants登録要のものは優先度低
-- [ ] 各データソースの実装拡張（e-Stat以外の残り指標。業界団体PDF系は優先度低・後回し）
-- [ ] 指標選択ロジックのチューニング: 実行時に「森永乳業（乳製品製造業）」に対し関連の薄い「鉱工業指数（鉄鋼業）」が選ばれるケースを確認。LLMのカテゴリ判定プロンプトの精度改善が必要
+  - 実装済み5指標（`sectors.json`・時系列あり）: `economy_watchers_survey`（景気ウォッチャー現状判断DI）／
+    `corporate_statistics_survey`（法人企業統計・売上高経常利益率）／`machinery_orders`（コア機械受注）／
+    `labour_force_survey`（完全失業率）／`money_stock`（マネーストックM2）
+  - `cpi`（消費者物価指数）は別パイプラインで取得済み（`macro/fetch_cpi.py` → `overall.json`。
+    セクターカタログの時系列とは別枠だが実質カバー済み）
+  - 残り32指標は下記チェックリスト参照
+- [x] **指標選択ロジックのチューニング（部分対応、2026-09-01）** — 実行時に「森永乳業（乳製品製造業）」に対し
+      関連の薄い「鉱工業指数（鉄鋼業）」が選ばれる事象を確認・原因特定。`steel_industry_index`が汎用タグ
+      `製造業（一般）`を持っていたため無関係な製造業サブカテゴリにも波及していたのが根本原因（LLMの判定精度の
+      問題ではなくカタログのタグ付けミス）。`製造業（一般）`タグを削除し、逆に`製造業（食品・飲料）`はどの
+      指標にも紐付いていなかった穴を`household_survey`（家計調査）に追加して埋めた。回帰テスト2件追加。
+      ※ LLMのカテゴリ判定プロンプト自体の精度改善は引き続き経過観察（別の業種で同種の誤マッチが出れば再オープン）
+- [x] **今後取得すべきセクター指標一覧（32指標、優先度順）** — `data/macro/indicator_catalog.json`参照。
+      2026-09-02: Tier1/Tier2のうち実データ取得を検証できた11指標を`macro/fetch_sectors_extra.py`
+      に実装（`fetch_sectors.py`とは別ファイル。同ファイルの5代表指標運用を崩さないため）。
+      grill-meでレイアウトを確定し`macro/report.py`の各タブにミニチャートとして表示・
+      `macro/refresh.py`のパイプライン（sectorsステップの直後）にも接続済み。詳細は下記
+      「Phase 4.6: セクター指標グラフ化」参照。
+  - **Tier 1: e-Stat API・easy（`EstatClient`実装済み・最優先）** — 12指標
+    - [x] `household_survey` 家計調査（消費・小売）— statsDataId=0002070001, tab=01,cat01=059(消費支出),cat02=03
+    - [ ] `commerce_dynamics` 商業動態統計（消費・小売）— 見送り。月次公表のたびに統計表IDが再発番され、
+          各IDは直近2-3年分の窓しか持たない（実データで確認: 0004013835は2021-2023のみ）。
+          `getStatsList`で最新表を都度検索する実装が必要（現状の他の関数と異なるパターン）。
+    - [x] `consumer_confidence_survey` 消費動向調査・消費者態度指数（消費・小売）— statsDataId=0003446462
+          （景気動向指数 個別系列表）、tab=200,cat01=1060（L6消費者態度指数）。表題「消費動向調査」
+          そのものでは検索ヒットせず、景気動向指数の構成系列として取得。
+    - [ ] `service_industry_dynamics` 特定サービス産業動態統計（企業活動・景況）— 見送り。
+          「第3次産業活動指数」「サービス産業活動指数」等での`getStatsList`検索が0件、
+          該当テーブルを特定できなかった。要再調査（e-Stat検索語の言い回しが違う可能性）。
+    - [x] `corporate_outlook_survey` 法人企業景気予測調査（企業活動・景況）— statsDataId=0003326000、
+          cat01=10(当期),cat02=20(大企業),cat03=50(BSI),cat04=10(全産業),cat05=20(国内)
+    - [ ] `trade_statistics` 貿易統計（貿易・生産）— 見送り。commerce_dynamicsと同様、月次ごとに表IDが
+          再発番される想定どおりで、`getStatsList`での固定ID特定ができなかった。
+    - [x] `steel_industry_index` 鉱工業指数・鉄鋼業（貿易・生産）— statsDataId=0004052177（2020年=100の
+          現行基準表）、cat01=0004000(鉄鋼業)。この表は@timeが年月の算術コードではなくメタ情報の
+          時間軸クラス名（例: コード"0500100"→名称"201801"）を都度引く必要があり、他のe-Stat関数と
+          パース方式が異なる（fetch_sectors_extra.pyの`fetch_steel_industry_index()`参照）。
+    - [ ] `tertiary_industry_index` 第3次産業活動指数（貿易・生産）— 見送り。「第3次産業活動指数」
+          「第三次産業活動指数」いずれの表記でも`getStatsList`が0件。要再調査。
+    - [ ] `construction_starts` 建築着工統計調査（貿易・生産）— 見送り。ヒットした候補（0003285828等）は
+          いずれも年次・2016年以前で更新停止のアーカイブ表。月次の現行表を特定できなかった。
+    - [ ] `monthly_labour_survey` 毎月勤労統計調査（労働・物価）— 見送り。候補テーブル
+          （0003029061, 0003138108, 0003030976等）を実データで検証したところ、いずれも2008年
+          または2015年で収録終了した旧基準（平成17年/22年基準等）のアーカイブ表と判明。基準改定後の
+          現行表（おそらく2020年基準）をe-Stat検索で特定できなかった。カタログnotesの「取得成功を
+          確認済み」は要再検証（当時どの表を指していたか不明）。
+    - [x] `tokyo_cpi` 消費者物価指数・東京都区部（労働・物価）— `cpi`と同一統計表0003427113、
+          `area=13A01`指定のみで`fetch_cpi.py`と同型実装。実データで確認済み。
+    - [x] `gdp_deflator` GDPデフレーター（労働・物価）— statsDataId=0003109787（四半期デフレーター
+          季節調整系列、2020暦年基準）、tab=19,cat01=11(国内総生産(支出側))
+  - **Tier 2: 日銀API・キー不要（`macro/boj.py`実装済み・次点）** — 6指標
+    - [x] `tankan` 日銀短観・業況判断DI（企業活動・景況）— db=CO, code=TK99F1000601GCQ01000
+          （大企業・製造業・実績）。期間コードが月次でなく四半期通番（下2桁01-04）のため専用の
+          `_boj_quarter_to_iso()`を実装（`boj_month_to_iso()`は月次専用で流用不可）。
+    - [ ] `consumption_activity_index` 消費活動指数CAI（消費・小売）— 見送り。日銀時系列統計データ
+          検索サイトの統計一覧PDF（`statistics_menu_list_j.pdf`ほか）にCAIの記載が見当たらず、
+          stat-search API経由での取得可否を確認できなかった。カタログ記載の`cai.xlsx`直接DLが唯一
+          確実な経路だが、Excel解析ライブラリの追加が必要になるため見送り。
+    - [x] `balance_of_payments` 国際収支統計（貿易・生産）— db=BP01, code=BPBP6JYNCB（経常収支）
+    - [x] `corporate_goods_price_index` 企業物価指数（労働・物価）— db=PR01, code=PRCG20_2200000000
+          （国内企業物価指数、総平均、2020年=100）
+    - [x] `services_producer_price_index` 企業向けサービス価格指数（労働・物価）— db=PR02,
+          code=PRCS20_5200000000（基本分類指数、総平均、2020年=100）
+    - [x] `monetary_base` マネタリーベース（不動産・金融）— db=MD01, code=MABS1AN11（平均残高）
+  - **Tier 3: 手動DL・APIなし（登録不要／軽量、時間があれば）** — 3指標
+    - [ ] `real_estate_price_index` 不動産価格指数（不動産・金融。国交省サイトからExcel直接DL、登録不要）
+    - [ ] `job_openings_ratio` 有効求人倍率（労働・物価。e-Statは「ファイル」形式のみでAPI不可）
+    - [ ] `urban_land_price_index` 市街地価格指数（不動産・金融。日本不動産研究所、無料web会員登録要）
+  - **Tier 4: 業界団体PDF・登録制API等（優先度低・後回し）** — 11指標
+    - [ ] `synthetic_consumption_index` 消費総合指数（内閣府。案内されているExcel直リンクが404、
+          安定した機械可読ソース未確定で要追加調査）
+    - [ ] `new_car_sales` 新車販売台数（JADA/全軽自協）
+    - [ ] `department_store_sales` 百貨店売上高（日本百貨店協会）
+    - [ ] `chain_store_sales` チェーンストア販売統計（日本チェーンストア協会）
+    - [ ] `convenience_store_stats` コンビニエンスストア統計調査（JFA）
+    - [ ] `restaurant_industry_survey` 外食産業市場動向調査（日本フードサービス協会）
+    - [ ] `sme_business_survey` 中小企業景況調査（中小機構）
+    - [ ] `bankruptcy_statistics` 倒産統計（TSR/TDB/法務省）
+    - [ ] `machine_tool_orders` 工作機械受注統計（日工会。PDFのみ公開）
+    - [ ] `official_land_price` 地価公示（国交省「不動産情報ライブラリAPI」は要利用申請・審査約5営業日）
+    - [ ] `stock_indices` 株価指数TOPIX等（J-Quants無料プランは12週間遅延。日経平均はFRED経由で取得済み）
 - [ ] 複数企業の一覧/インデックスページ（Phase 5の将来項目）
 
 ## Phase 6: 精度改善・運用
@@ -223,7 +316,7 @@
 
 ## 進捗サマリー（2026-08-27 時点）
 
-> ⚠️ 最新版は本ファイル末尾の **「進捗サマリー（2026-08-30 時点）」** を参照。以下は履歴として残置。
+> ⚠️ 最新版は本ファイル末尾の **「進捗サマリー（2026-09-01 時点）」** を参照。以下は履歴として残置。
 
 ### ここまでの推移
 
@@ -310,8 +403,9 @@
    - **1e.** ✅ 完了（2026-08-30）: EDINET・GOOGLE 実キーを `.env` に投入し `uv run python -m
      evaluation.cli --company 森永乳業 --from 2025-06-01 --to 2025-06-30 --model gemini-flash-latest`
      を実行。森永乳業2025年3月期・総合判定「適格」のレポート生成を確認（`data/reports/`）
-   - **1f.** ⬜ **次**: チューニング: 散文クエリ（有報リスク/MD&A）は辞典（表主体）に対してノイズ寄り。
-     重み下げ／除外、`n_evidence` と truncate 上限、業種タームの絞り方を調整
+   - **1f.** ✅ 完了（2026-09-01）: 散文クエリ（有報リスク/MD&A）への重み下げ実装
+     （`evaluation/retrieval.py`。詳細は Phase 4 セクション参照）。`n_evidence` 上限調整・
+     業種タームの絞り方の追加チューニングは実運用しながら経過観察
    - **1g.** ⬜ 別モデル比較（`--model claude-opus-5` / `gpt-*`。要 optional-deps とキー）
 
 2. **rag/ と dictionary/ の整合（1b の精度向上）** — `rag/industry_map.json` の `entries` が空
@@ -333,3 +427,87 @@
 - Chroma は `make chroma-pull` でどのデバイスからも取得可（GCS 正本アップロード済み）
 - Gemini 3 系は thinking 既定 on。少ない出力上限だと空応答になるため軽量呼び出しは `light=True`（`llm.py`）
 - 評価に Anthropic/OpenAI を使うなら `uv sync --extra anthropic` / `--extra openai` と各 API キー
+
+---
+
+## 進捗サマリー（2026-09-01 時点）
+
+### 08-31 以降にやったこと
+
+**Phase 4 RAG チューニング（1f 完了）**
+- `evaluation/retrieval.py`: 有報リスク/MD&A の散文クエリは審査辞典（表主体）に対しノイズ寄りな問題へ対応。
+  散文クエリの取得件数を絞り込み（`_PROSE_PER_QUERY_K=3` vs 通常`_PER_QUERY_K=6`）、最終選定時に
+  散文由来ヒットへ距離ペナルティ（`_PROSE_DISTANCE_PENALTY=0.08`）を課して業種タームクエリの結果を優先。
+  除外はせず、他に候補が無ければ保険として残す設計。選定ロジックを`_select_evidence()`として
+  純粋関数に切り出しテスト追加。
+
+**セクター指標カタログのタグ付け修正（指標選択ロジックの誤マッチ・部分対応）**
+- 森永乳業（乳製品製造業）評価時に無関係な「鉱工業指数（鉄鋼業）」が選ばれる事象の原因を特定・修正。
+  `steel_industry_index`が汎用タグ`製造業（一般）`を持っていたことが原因（LLM判定の精度問題ではなく
+  カタログのタグ付けミス）。該当タグを削除し、逆に紐付く指標が1つも無かった`製造業（食品・飲料）`を
+  `household_survey`（家計調査）に追加してカバレッジの穴を埋めた。
+
+**Phase 4.6: 5分野タブのLLM解説文（brush up）**
+- grill-meで設計確定。マクロページの5分野（消費・小売／企業活動・景況／貿易・生産／労働・物価／
+  不動産・金融）タブに、代表指標の動きを80〜150字で解説する文章を追加。国レベルの「読み方」パネルとは
+  独立して評釈し（tone/verdictピルは付与しない）、1回のLLM呼び出しで5分野分をまとめて生成
+  （`macro/narrative.py: generate_sector_narratives()`）。`narrative.json`の`sectors`キーに保存
+  （既存の日米見立てとはマージ安全）。個別株の評価レポートでも、選択されたセクター指標をタブごとに
+  グルーピングして解説を1回だけ引用するよう`evaluation/report.py`を変更。実データ・実LLMで生成確認済み。
+  テスト7件追加。
+
+**スクリプト整理**
+- `macro/refresh.py`（新規）: これまで `fetch_jp_market` → `fetch`（overall: FRED+CPI）→ `fetch_us` →
+  `fetch_sectors` → `report` の5回の手動実行が必要だったマクロ更新パイプラインを1コマンドに統合
+  （`uv run python -m macro.refresh` / `make macro-refresh`）。1ステップの失敗（APIキー未設定・
+  一時的な不通等）で残りを止めない設計とし、実データで実行確認済み（1回目は`report`ステップのみ
+  Geminiの一時的なJSON崩れで失敗→再実行で成功、他4ステップの独立性を確認）。Phase 5 の
+  cron/Scheduler化はこのコマンドを実行単位にする想定。
+- `macro/*.py`の`import argparse`配置を統一（6ファイルで`main()`内のローカルimportになっていたのを
+  モジュール先頭に移動。`dictionary/`・`scripts/`は元々先頭importで統一済みだったため、リポジトリ全体で
+  一貫させた）。
+- `dictionary/build_index.py`のdocstringに「Standard API版・動作確認用として残置、実運用は
+  `build_index_batch.py`」という注記を追加（従来 TODO.md にしかなかった経緯をコード側にも明記）。
+- 今後取得すべきセクター指標32件を優先度別（Tier 1〜4）に整理してチェックリスト化
+  （詳細は Phase 4.6 セクション参照）。
+
+**Phase 4.6: セクター指標グラフ化（Tier1/Tier2の11指標を実装・表示）**
+- grill-meで設計確定。マクロページの各タブを3階層構成に変更:
+  ①代表チャート（従来通り5分野固定・LLM解説文付き）②実データが確認できた指標のミニチャート
+  （新規、`_sector_mini_chart_html()`、2列固定グリッド、`renderLineChart()`をサイズ違いで再利用し
+  ホバー/ツールチップはそのまま維持）③まだ実データがない指標のメタデータのみカード（従来通り）。
+  ①②に表示された指標は③のカード一覧から重複除外。`macro/report.py: _catalog_tabs_html()`を拡張。
+- `macro/refresh.py`に`sectors_extra`ステップを追加（`sectors`ステップの直後、6ステップ構成に）。
+- 個別株評価レポート側（`evaluation/report.py: _macro_premise()`）も、選択されたセクター指標に
+  実データがあれば直近値・日付を併記するよう拡張（`macro/indicators.py: load_sector_series()`
+  でsectors.json/sectors_extra.jsonを統合、キー未一致や未取得時は従来通り名称のみ）。
+  実データ・実LLMで生成確認済み（`data/macro/report.html`）。テスト3件追加。
+
+### 現在地（フェーズ別ステータス）
+
+| Phase | 状態 | 補足 |
+|---|---|---|
+| Phase 1: インフラ | ⏳ ほぼ未着手 | 変更なし |
+| Phase 2: 審査辞典RAG化 | ✅ 完了 | 変更なし |
+| Phase 3: EDINET取得 | ✅ ほぼ完了 | 変更なし |
+| Phase 4: 評価エンジン | 🟢 完全ライブ実行OK | 1f（散文クエリの重み下げ）完了。残るは 1g（別モデル比較）のみ |
+| Phase 4.5: マクロ経済 | 🟡 全体系＋Phase4配線済み | 変更なし。業種別DI/IIP が残 |
+| Phase 4.6: マクロ/個別株ページ分離 | 🟢 主要機能完了 | 5分野タブのLLM解説文・マクロ更新1コマンド化・Tier1/2の11指標グラフ化を追加。残は指標選択ロジックの継続チューニング・残り21指標（見送り7＋Tier3/4）の実装拡張 |
+| Phase 5: nanoclaw統合 | ⬜ 未着手 | Phase 4 完了後 |
+| Phase 6: 精度改善・運用 | ⬜ 未着手 | |
+
+### これから行うべきこと（優先順）
+
+1. **1g. 別モデル比較**（`--model claude-opus-5` / `gpt-*`。要 optional-deps とキー）
+2. **rag/ と dictionary/ の整合**（entries 投入）— 未着手のまま最優先級。RAG precision と業種別DI/IIP 両方の前提
+3. **セクター指標の実装拡張（残り）** — Tier1で見送った6指標の再調査（毎月最新表を都度検索する
+   `getStatsList`パターンの実装、または該当テーブルの再特定）、Tier3（手動DL3指標）、Tier4（業界団体
+   PDF等11指標）
+4. **業種別DI/IIP追加**（項目2に依存）
+5. **Phase 1: インフラ**（Phase 4 が動いてから）
+6. **マクロ更新の自動化**（cron/Scheduler、`macro.refresh` を実行単位に）
+
+### 既知のブロッカー / 依存
+- rag/ entries 投入は依存なしで即着手可（最も前進効果が大きい）
+- セクター指標拡張（Tier 1〜2）も依存なしで並行着手可
+- Drive 保存は Phase 1 の OAuth 設定待ち

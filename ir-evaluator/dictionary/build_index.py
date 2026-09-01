@@ -1,5 +1,8 @@
 """審査辞典PDF（スキャン画像）をOCR・チャンク分割・ベクトル化してChromaに格納するパイプライン
 
+Standard API・同期並列版。動作確認用として残置しているのみで、実運用では使っていない
+（本番投入は `build_index_batch.py` の Gemini Batch API 版で完了済み。コスト半減のため）。
+
 OCR・Embeddingともに GOOGLE_API_KEY が必要（.env に設定）。
 OCR/Embedding呼び出し（ネットワーク待ち）はスレッドプールで並列化し、Chromaへの書き込みのみ
 メインスレッドで直列に行う（PersistentClientの競合を避けるため）。

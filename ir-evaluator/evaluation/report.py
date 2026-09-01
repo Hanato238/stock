@@ -95,11 +95,13 @@ def _macro_premise(bundle: EvaluationBundle) -> str:
     lines = ["## マクロ前提（詳細は別ページ）", ""]
 
     try:
-        from macro.narrative import load_narratives
+        from macro.narrative import load_narratives, load_sector_narratives
 
         narratives = load_narratives()
+        sector_narratives = load_sector_narratives()
     except ImportError:
         narratives = None
+        sector_narratives = None
 
     if narratives and "japan" in narratives:
         n = narratives["japan"]
@@ -118,12 +120,41 @@ def _macro_premise(bundle: EvaluationBundle) -> str:
     except (ImportError, IndicatorSelectionError):
         indicators = []
 
+    try:
+        from macro.context import _fmt_value
+        from macro.indicators import load_sector_series
+
+        sector_series = load_sector_series()
+    except ImportError:
+        sector_series = {}
+        _fmt_value = None
+
     if indicators:
         lines.append("**関連セクター指標（業種に応じて自動選択）:**")
         lines.append("")
+        by_tab: dict[str, list[dict]] = {}
+        tab_order: list[str] = []
         for ind in indicators:
-            lines.append(f"- {ind['name_ja']}（{ind.get('publisher', '不明')}、{ind.get('frequency', '')}）")
-        lines.append("")
+            tab = ind.get("tab", "")
+            if tab not in by_tab:
+                by_tab[tab] = []
+                tab_order.append(tab)
+            by_tab[tab].append(ind)
+
+        for tab in tab_order:
+            lines.append(f"【{tab}】" if tab else "（分野不明）")
+            for ind in by_tab[tab]:
+                line = f"- {ind['name_ja']}（{ind.get('publisher', '不明')}、{ind.get('frequency', '')}）"
+                series = sector_series.get(ind.get("key", ""))
+                latest = series.latest() if series else None
+                if latest is not None and _fmt_value is not None:
+                    line += f" — 直近{_fmt_value(latest.value, series.unit)}（{latest.date}）"
+                lines.append(line)
+            sn = (sector_narratives or {}).get(tab)
+            if sn:
+                lines.append("")
+                lines.append(sn.body)
+            lines.append("")
 
     lines.append("詳細な景気動向指数（CI/DI）・CFNAI・株式市場チャート等は `data/macro/report.html` を参照。")
     return "\n".join(lines)

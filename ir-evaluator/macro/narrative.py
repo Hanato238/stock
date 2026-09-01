@@ -11,6 +11,7 @@ evaluation.engine が macro.context を遅延 import している）、LLM 呼�
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 from dataclasses import dataclass, field
@@ -75,6 +76,47 @@ class MacroNarrative:
 
 class NarrativeError(RuntimeError):
     """マクロ見立て生成の失敗（データ不足・LLM 失敗など）。"""
+
+
+@dataclass
+class SectorNarrative:
+    """セクター指標カタログの1分野（タブ）分の短い解説文。"""
+
+    tab: str
+    indicator_key: str
+    body: str
+    model: str = ""
+    generated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+
+    def to_dict(self) -> dict:
+        return {
+            "tab": self.tab,
+            "indicator_key": self.indicator_key,
+            "body": self.body,
+            "model": self.model,
+            "generated_at": self.generated_at,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> SectorNarrative:
+        return cls(
+            tab=d["tab"],
+            indicator_key=d["indicator_key"],
+            body=d["body"],
+            model=d.get("model", ""),
+            generated_at=d.get("generated_at", ""),
+        )
+
+
+# タブ（5分野）ごとの代表指標キー（data/macro/sectors.json、macro/fetch_sectors.py が
+# 実際に取得・検証した5系列）。macro/report.py の表示側もこのマッピングを共有する。
+SECTOR_TAB_KEYS: dict[str, str] = {
+    "消費・小売": "economy_watchers_di",
+    "企業活動・景況": "corporate_profit_margin",
+    "貿易・生産": "core_machinery_orders",
+    "労働・物価": "unemployment_rate",
+    "不動産・金融": "money_stock_m2",
+}
 
 
 # --------------------------------------------------------------------------
@@ -270,8 +312,94 @@ def generate_narrative(region: str, *, model: str | None = None) -> MacroNarrati
 
 
 # --------------------------------------------------------------------------
+# セクター指標カタログ（5分野タブ）の解説生成
+# --------------------------------------------------------------------------
+
+_SECTOR_PROMPT = """\
+あなたは日本の投資家向けにセクター（経済分野）ごとの景況を解説するアナリストです。
+以下は日本経済を5つの分野に分けたときの、各分野を代表する指標の実測データです
+（すべて事実。数値の再計算は不要）。
+
+{facts}
+
+各分野について、その代表指標の動きが何を意味するかを日本語で80〜150字程度の
+短い解説文にしてください。
+- 必ず上記データの具体的な数値を引用すること。データにない数値を創作しないこと
+- 分野同士は互いに独立に評釈してよい。日本経済全体の基調と無理に整合を取ろうとしないこと
+- 個別銘柄の売買判断や「買い時/売り時」には踏み込まないこと
+
+出力は次の JSON のみ（前後に地の文やコードフェンスを付けない）:
+{{"sectors": [{{"tab": "分野名", "body": "..."}}, ...]}}
+"""
+
+
+def generate_sector_narratives(*, model: str | None = None) -> dict[str, SectorNarrative]:
+    """5分野（タブ）それぞれの代表指標から、短い解説を1回のLLM呼び出しでまとめて生成する。
+
+    `data/macro/sectors.json`（`macro.fetch_sectors`）が無ければ NarrativeError。
+    呼び出し側（macro.report）はベストエフォートでこれを捕捉しスキップする想定
+    （代表指標のチャート自体は sectors.json 無しでも表示できるため）。
+    """
+    try:
+        sectors = load_bundle("sectors.json")
+    except FileNotFoundError as e:
+        raise NarrativeError(
+            f"{e.filename} が見つかりません。`uv run python -m macro.fetch_sectors` を先に実行してください。"
+        ) from e
+
+    facts: list[str] = []
+    available: dict[str, str] = {}  # tab -> indicator_key（実際にデータがある分だけ）
+    for tab, key in SECTOR_TAB_KEYS.items():
+        series = sectors.get(key)
+        if series is None:
+            continue
+        facts.append(f"【{tab}】（代表指標: {series.label}）\n{_series_fact(_recent(series))}")
+        available[tab] = key
+
+    if not facts:
+        raise NarrativeError("sectors.json に代表指標のデータがありません。")
+
+    # 遅延 import: macro パッケージを evaluation パッケージへ静的依存させないため。
+    from evaluation.llm import LLMError, generate_json
+    from evaluation.schema import _loads_lenient
+
+    prompt = _SECTOR_PROMPT.format(facts="\n\n".join(facts))
+    use_model = model or DEFAULT_NARRATIVE_MODEL
+    try:
+        resp = generate_json(prompt, model=use_model, max_output_tokens=2048, light=True)
+        data = _loads_lenient(resp.text)
+    except LLMError as e:
+        raise NarrativeError(f"LLM呼び出しに失敗しました: {e}") from e
+    except (ValueError, KeyError, TypeError) as e:
+        raise NarrativeError(f"LLM応答のパースに失敗しました: {e}") from e
+
+    raw = data.get("sectors", [])
+    bodies: dict[str, str] = {}
+    if isinstance(raw, list):
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            tab = str(item.get("tab", "")).strip()
+            body = str(item.get("body", "")).strip()
+            if tab in available and body:
+                bodies[tab] = body
+
+    return {
+        tab: SectorNarrative(tab=tab, indicator_key=key, body=bodies[tab], model=use_model)
+        for tab, key in available.items()
+        if tab in bodies
+    }
+
+
+# --------------------------------------------------------------------------
 # 永続化（企業評価レポート側が LLM を再呼び出しせず引用するためのキャッシュ）
 # --------------------------------------------------------------------------
+
+def _read_existing(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
 
 def save_narratives(
     japan: MacroNarrative,
@@ -280,10 +408,16 @@ def save_narratives(
     directory: Path = _DEFAULT_NARRATIVE_DIR,
     filename: str = _NARRATIVE_FILENAME,
 ) -> Path:
-    """日米の見立てを1ファイルにまとめて保存する（週次更新でマクロページ生成時に呼ぶ想定）。"""
+    """日米の見立てを1ファイルにまとめて保存する（週次更新でマクロページ生成時に呼ぶ想定）。
+
+    既存ファイルに `sectors`（`save_sector_narratives` が書いた分野解説）があれば
+    読み込んでマージし、上書きで消さない（呼び出し順序に依存しないようにするため）。
+    """
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / filename
-    payload = {"japan": japan.to_dict(), "us": us.to_dict()}
+    payload = _read_existing(path)
+    payload["japan"] = japan.to_dict()
+    payload["us"] = us.to_dict()
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path
 
@@ -291,21 +425,56 @@ def save_narratives(
 def load_narratives(
     *, directory: Path = _DEFAULT_NARRATIVE_DIR, filename: str = _NARRATIVE_FILENAME
 ) -> dict[str, MacroNarrative] | None:
-    """保存済みの見立てを読み込む。未生成なら None（LLM は呼ばない）。"""
+    """保存済みの日米見立てを読み込む。未生成なら None（LLM は呼ばない）。"""
     path = directory / filename
     if not path.exists():
         return None
     data = json.loads(path.read_text(encoding="utf-8"))
-    return {region: MacroNarrative.from_dict(d) for region, d in data.items()}
+    regions = {k: v for k, v in data.items() if k in ("japan", "us")}
+    if not regions:
+        return None
+    return {region: MacroNarrative.from_dict(d) for region, d in regions.items()}
+
+
+def save_sector_narratives(
+    sectors: dict[str, SectorNarrative],
+    *,
+    directory: Path = _DEFAULT_NARRATIVE_DIR,
+    filename: str = _NARRATIVE_FILENAME,
+) -> Path:
+    """5分野の解説を `sectors` キーへ保存する（japan/us キーは保持したままマージ）。"""
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / filename
+    payload = _read_existing(path)
+    payload["sectors"] = {tab: sn.to_dict() for tab, sn in sectors.items()}
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def load_sector_narratives(
+    *, directory: Path = _DEFAULT_NARRATIVE_DIR, filename: str = _NARRATIVE_FILENAME
+) -> dict[str, SectorNarrative] | None:
+    """保存済みの分野解説を読み込む。未生成なら None（LLM は呼ばない）。"""
+    path = directory / filename
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    raw = data.get("sectors")
+    if not raw:
+        return None
+    return {tab: SectorNarrative.from_dict(d) for tab, d in raw.items()}
 
 
 def main() -> None:
-    import argparse
-
-    parser = argparse.ArgumentParser(description="マクロの読み方・総合見立てをLLM生成")
-    parser.add_argument("region", choices=("japan", "us"))
+    parser = argparse.ArgumentParser(description="マクロの読み方・総合見立て／分野解説をLLM生成")
+    parser.add_argument("region", choices=("japan", "us", "sectors"))
     parser.add_argument("--model", default=None)
     args = parser.parse_args()
+
+    if args.region == "sectors":
+        result = generate_sector_narratives(model=args.model)
+        print(json.dumps({tab: sn.to_dict() for tab, sn in result.items()}, ensure_ascii=False, indent=2))
+        return
 
     narrative = generate_narrative(args.region, model=args.model)
     print(json.dumps(narrative.to_dict(), ensure_ascii=False, indent=2))

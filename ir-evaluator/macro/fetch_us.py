@@ -8,6 +8,7 @@ Activity Index）を採用する。ISM PMI・Conference Board LEI（USSLIND）�
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 
 from .fred import FredClient
@@ -63,8 +64,6 @@ def fetch_us(
 
 
 def main() -> None:
-    import argparse
-
     from .store import save_bundle
 
     parser = argparse.ArgumentParser(description="米国側マクロ指標を取得（us.json）")

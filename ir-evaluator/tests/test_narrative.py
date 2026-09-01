@@ -8,11 +8,15 @@ from macro.narrative import (
     MacroNarrative,
     NarrativeError,
     NarrativeParagraph,
+    SectorNarrative,
     _recent,
     _series_fact,
     generate_narrative,
+    generate_sector_narratives,
     load_narratives,
+    load_sector_narratives,
     save_narratives,
+    save_sector_narratives,
 )
 from macro.store import SeriesData
 
@@ -161,3 +165,88 @@ def test_save_and_load_narratives_roundtrip(tmp_path):
 
 def test_load_narratives_returns_none_when_missing(tmp_path):
     assert load_narratives(directory=tmp_path) is None
+
+
+def test_generate_sector_narratives_missing_sectors_json_raises(monkeypatch):
+    monkeypatch.setattr(narrative, "load_bundle", lambda filename: (_ for _ in ()).throw(FileNotFoundError(filename)))
+    with pytest.raises(NarrativeError):
+        generate_sector_narratives()
+
+
+def test_generate_sector_narratives_success(monkeypatch):
+    sectors = {
+        "economy_watchers_di": _series("economy_watchers_di", "景気ウォッチャー現状判断DI", "指数", [("2026-07-01", 48.2)]),
+        "unemployment_rate": _series("unemployment_rate", "完全失業率", "%", [("2026-07-01", 2.4)]),
+    }
+    monkeypatch.setattr(narrative, "load_bundle", lambda filename: sectors if filename == "sectors.json" else {})
+
+    def fake_generate_json(prompt, *, model=None, max_output_tokens=None, system=None, light=False):
+        from evaluation.llm import LLMResponse
+
+        assert "景気ウォッチャー現状判断DI" in prompt
+        return LLMResponse(
+            text=(
+                '{"sectors": ['
+                '{"tab": "消費・小売", "body": "現状判断DIは48.2で推移。"},'
+                '{"tab": "労働・物価", "body": "完全失業率は2.4%で推移。"},'
+                '{"tab": "でたらめな分野", "body": "無視されるべき。"}'
+                "]}"
+            ),
+            model="gemini-flash-latest",
+            provider="gemini",
+        )
+
+    monkeypatch.setattr("evaluation.llm.generate_json", fake_generate_json)
+
+    result = generate_sector_narratives()
+    assert set(result) == {"消費・小売", "労働・物価"}  # データが無い分野・タブ外の応答は除外
+    assert result["消費・小売"].body == "現状判断DIは48.2で推移。"
+    assert result["消費・小売"].indicator_key == "economy_watchers_di"
+
+
+def test_generate_sector_narratives_wraps_llm_error(monkeypatch):
+    sectors = {"economy_watchers_di": _series("economy_watchers_di", "DI", "指数", [("2026-07-01", 48.2)])}
+    monkeypatch.setattr(narrative, "load_bundle", lambda filename: sectors if filename == "sectors.json" else {})
+
+    def boom(*a, **k):
+        from evaluation.llm import LLMError
+
+        raise LLMError("down")
+
+    monkeypatch.setattr("evaluation.llm.generate_json", boom)
+    with pytest.raises(NarrativeError):
+        generate_sector_narratives()
+
+
+def test_save_and_load_sector_narratives_roundtrip(tmp_path):
+    sectors = {
+        "消費・小売": SectorNarrative(tab="消費・小売", indicator_key="economy_watchers_di", body="堅調。", model="m"),
+    }
+    path = save_sector_narratives(sectors, directory=tmp_path)
+    assert path.exists()
+
+    loaded = load_sector_narratives(directory=tmp_path)
+    assert loaded["消費・小売"].body == "堅調。"
+    assert loaded["消費・小売"].indicator_key == "economy_watchers_di"
+
+
+def test_load_sector_narratives_returns_none_when_missing(tmp_path):
+    assert load_sector_narratives(directory=tmp_path) is None
+
+
+def test_save_narratives_and_save_sector_narratives_do_not_clobber_each_other(tmp_path):
+    jp = MacroNarrative(region="japan", tone="expand", tone_label="拡大局面", paragraphs=[], verdict="v", model="m")
+    us = MacroNarrative(region="us", tone="neutral", tone_label="巡航", paragraphs=[], verdict="v2", model="m")
+    sectors = {"消費・小売": SectorNarrative(tab="消費・小売", indicator_key="economy_watchers_di", body="堅調。")}
+
+    # 順序1: narratives → sectors
+    save_narratives(jp, us, directory=tmp_path)
+    save_sector_narratives(sectors, directory=tmp_path)
+    assert load_narratives(directory=tmp_path)["japan"].tone_label == "拡大局面"
+    assert load_sector_narratives(directory=tmp_path)["消費・小売"].body == "堅調。"
+
+    # 順序2: sectors → narratives（逆順でも互いを消さない）
+    save_sector_narratives(sectors, directory=tmp_path)
+    save_narratives(jp, us, directory=tmp_path)
+    assert load_narratives(directory=tmp_path)["us"].verdict == "v2"
+    assert load_sector_narratives(directory=tmp_path)["消費・小売"].indicator_key == "economy_watchers_di"

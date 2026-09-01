@@ -45,8 +45,8 @@
       "access_url": "https://www.e-stat.go.jp/stat-search/database?toukei=00200561 ; https://www.stat.go.jp/data/kakei/index.htm",
       "difficulty": "easy",
       "nature": "hard",
-      "relevant_industries": ["小売業", "宿泊業・飲食サービス業", "全業種共通"],
-      "notes": "e-Stat APIでtoukei=00200561配下の統計表（家計収支編）をstatsDataId指定で取得可能。総務省本体サイトでもCSV/Excel配布あり。"
+      "relevant_industries": ["小売業", "宿泊業・飲食サービス業", "製造業（食品・飲料）", "全業種共通"],
+      "notes": "e-Stat APIでtoukei=00200561配下の統計表（家計収支編）をstatsDataId指定で取得可能。総務省本体サイトでもCSV/Excel配布あり。2026-08-31: 「製造業（食品・飲料）」を追加（食品支出の内訳を含み、食品・飲料メーカーの需要環境を映す消費側統計として妥当なため。従来この業種分類はどの指標にも紐付いておらず、選択ロジックが無関係な指標にフォールバックする原因になっていた）。"
     },
     {
       "key": "commerce_dynamics",
@@ -349,8 +349,8 @@
       "access_url": "https://www.meti.go.jp/statistics/tyo/iip/index.html ; https://www.e-stat.go.jp/stat-search/files?toukei=00550300",
       "difficulty": "easy",
       "nature": "hard",
-      "relevant_industries": ["製造業（鉄鋼・金属）", "建設業", "製造業（一般）"],
-      "notes": "鉱工業指数の業種別（鉄鋼業含む）生産・出荷・在庫指数をCSV/Excel・e-Stat API双方で取得可能。"
+      "relevant_industries": ["製造業（鉄鋼・金属）", "建設業"],
+      "notes": "鉱工業指数の業種別（鉄鋼業含む）生産・出荷・在庫指数をCSV/Excel・e-Stat API双方で取得可能。2026-08-31: relevant_industriesから「製造業（一般）」を削除（鉄鋼業specificな指標が食品等の無関係な製造業サブカテゴリにも波及していたバグを修正。詳細はTODO.md Phase4.6参照）。"
     },
     {
       "key": "tertiary_industry_index",

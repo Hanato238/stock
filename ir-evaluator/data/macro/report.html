@@ -99,6 +99,7 @@
   .tooltip .tt-row .tt-key-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
   .tooltip .tt-v { font-weight: 700; font-variant-numeric: tabular-nums; }
   .chart-foot-note { font-size: 0.74rem; color: var(--ink-faint); margin-top: 10px; }
+  .chart-narrative { font-size: 0.82rem; color: var(--ink); line-height: 1.75; margin: 8px 0 0; }
   .gauge-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0 26px; }
   .gauge-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; box-shadow: var(--shadow); }
   .gauge-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
@@ -158,6 +159,11 @@
   .example-lede { font-size: 0.8rem; color: var(--ink-muted); margin: 0 0 8px; }
   .example-list { margin: 0; padding-left: 1.2em; font-size: 0.84rem; color: var(--ink); line-height: 1.7; }
   .sector-trend-card { margin-bottom: 16px; }
+  .mini-chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 0 0 14px; }
+  @media (max-width: 720px) { .mini-chart-grid { grid-template-columns: 1fr; } }
+  .mini-chart-card { padding: 14px 16px 12px; margin-bottom: 0; }
+  .mini-chart-card .chart-title { font-size: 0.86rem; }
+  .mini-chart-card .chart-foot-note { font-size: 0.7rem; }
   .appendix-note { font-size: 0.82rem; color: var(--ink-faint); }
   footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
   .sources { font-size: 0.76rem; color: var(--ink-faint); line-height: 1.8; }
@@ -174,8 +180,8 @@
     <p class="eyebrow">マクロ経済モニター</p>
     <h1 class="company-name">日本・米国 景気サイクル定点観測</h1>
     <dl class="meta-row">
-      <span class="meta-item"><dt>データ最終更新</dt><dd>2026-08-28</dd></span>
-      <span class="meta-item"><dt>ページ生成</dt><dd>2026-08-31 20:04 UTC</dd></span>
+      <span class="meta-item"><dt>データ最終更新</dt><dd>2026-09-04</dd></span>
+      <span class="meta-item"><dt>ページ生成</dt><dd>2026-09-01 16:16 UTC</dd></span>
       <span class="meta-item"><dt>対象地域</dt><dd>日本 / 米国</dd></span>
     </dl>
   </header>
@@ -196,7 +202,7 @@
       <div class="tile"><p class="t-label">日経平均株価</p><p class="t-value">66036.8円</p><span class="t-delta up">前年比 +53.3%</span></div>
       <div class="tile"><p class="t-label">景気動向指数 CI一致指数</p><p class="t-value">118.5</p><span class="t-delta">前年比 +2.4%</span></div>
       <div class="tile"><p class="t-label">景気動向指数 DI一致指数</p><p class="t-value">72.2</p><span class="t-status expand">拡大局面の目安（&gt;50）</span></div>
-      <div class="tile"><p class="t-label">USD/JPY</p><p class="t-value">162.3円</p><span class="t-delta up">前年比 +10.3%</span></div>
+      <div class="tile"><p class="t-label">USD/JPY</p><p class="t-value">158.8円</p><span class="t-delta up">前年比 +7.7%</span></div>
       <div class="tile"><p class="t-label">S&amp;P500</p><p class="t-value">7689.72pt</p><span class="t-delta up">前年比 +19.8%</span></div>
       <div class="tile"><p class="t-label">米国 景気活動指数 CFNAI</p><p class="t-value">-0.08</p><span class="t-status neutral">3か月平均 -0.04</span></div>
       <div class="tile"><p class="t-label">FF金利誘導目標</p><p class="t-value">3.63%</p><span class="t-delta down">前年差 -0.70%pt</span></div>
@@ -231,21 +237,21 @@
 
     <h3 class="subsection-title">読み方 <span class="h2-sub">LLM生成・データからの機械的な読み取り・公式見解ではありません</span></h3>
     <div class="reading-panel">
-      <p><b>景気動向指数と実体経済の動向:</b> 景気の一致指数は極めて堅調に推移しています。2026年6月時点のCI一致指数は118.5と期間内高値を記録し、起点比+4.9%の上昇となりました。DI一致指数も72.2と景気判断の分岐点である50%を大きく上回っています。さらに先行指標であるCI先行指数は116.5（同+6.0%）、DI先行指数は60.0を維持しており、2026年4月時点の名目GDPも687.7兆円（同+8.5%）へ拡大するなど、日本経済は力強い拡大基調を維持しています。</p>
-      <p><b>株式市場と為替レートの動向:</b> 堅調な実体経済を背景に、株式市場は大幅な上昇を見せています。日経平均株価は2026年8月28日時点で66,037円となり、2025年8月時点の40,839円から+61.7%の大幅高となりました。一方、為替市場ではUSD/JPYが2026年7月時点で162.3円を記録し、期間内高値を更新するなど円安水準が継続しています。こうした為替動向と企業業績の拡大が、株価を力強く押し上げる要因となっています。</p>
-      <p><b>物価上昇と金利環境の変化:</b> 物価と金利の両面で正常化・上昇基調が顕著です。2026年7月時点のコアCPIは113.6（起点比+4.9%）とインフレ傾向が定着しています。これに伴い日銀の政策金利は2026年6月時点で0.84%（同+0.76%pt）まで引き上げられ、日本の10年国債利回りも2.67%（同+1.07%pt）と期間内高値へ上昇しました。金利環境の変化が進む中でも、経済活動の拡大傾向は維持されています。</p>
+      <p><b>景気動向指数と実体経済の動向:</b> CI一致指数が期間内高値の118.5（起点比+4.9%）、CI先行指数が116.5（+6.0%）と堅調に推移しています。また、景気判断の節目となる50%をDI一致指数（72.2）およびDI先行指数（60.0）の双方が上回っています。名目GDPも687.7兆円（+8.5%）と高値を更新しており、生産や需要の拡大を背景に実体経済は力強い拡大基調を維持しています。</p>
+      <p><b>金利・為替・物価環境の推移:</b> 政策金利が0.84%まで引き上げられ、10年国債利回りも2.67%へと上昇するなど金融政策の正常化が進展しています。為替市場ではUSD/JPYが158.8円と円安基調が継続し、コアCPIは113.6（起点比+4.9%）とインフレ傾向が定着しています。金利上昇が続く一方で、円安と名目成長の好循環が経済活動の下支えとして機能しています。</p>
+      <p><b>株式市場のパフォーマンス:</b> 日経平均株価は66,037円と起点比+61.7%の大幅な上昇を記録し、期間中には高値70,609円を付けました。名目GDPの拡大や良好な企業活動を反映し、株式市場は高い水準を保っています。金利上昇局面でありながらも、景気一致指数の力強い動きに支えられ、マクロ環境に即した堅調な地合いが形成されています。</p>
     </div>
     <div class="verdict-panel" style="border-left-color:var(--risk-low)">
       <div class="verdict-head">
         <span class="gauge-status expand">力強い景気拡大局面</span>
         <span class="v-title">日本 総合見立て</span>
       </div>
-      <p>各種景気指数や名目GDPの推移から、現在の日本経済は力強い拡大局面に位置していると判断されます。インフレ定着に伴う金利上昇が進んでいるものの、一致・先行指数の堅調さを見る限り、景気の拡大基調は当面継続する可能性が高い状況です。</p>
+      <p>CI一致指数の高値更新（118.5）や名目GDPの拡大（687.7兆円）が示す通り、日本経済は明確な拡大局面にあります。金利や物価の上昇が進行しつつもDI先行指数は60.0と好不況の境目を上回っており、景気拡大の持続性が確認されます。</p>
     </div>
 
     <h3 class="subsection-title">基礎指標 <span class="h2-sub">各社評価レポートのマクロ前提として使用</span></h3>
     <div class="base-grid">
-      <div class="base-card"><p class="b-label2">USD/JPY 為替レート</p><p class="b-value2">162.3円</p><span class="b-delta up">前年比 +10.3%</span><span class="b-asof">2026-07-01 ／ 出典: FRED</span></div>
+      <div class="base-card"><p class="b-label2">USD/JPY 為替レート</p><p class="b-value2">158.8円</p><span class="b-delta up">前年比 +7.7%</span><span class="b-asof">2026-08-01 ／ 出典: FRED</span></div>
       <div class="base-card"><p class="b-label2">政策金利（無担保コール翌日物近似）</p><p class="b-value2">0.84%</p><span class="b-delta">前年差 +0.36%pt</span><span class="b-asof">2026-06-01 ／ 出典: FRED</span></div>
       <div class="base-card"><p class="b-label2">名目GDP（水準）</p><p class="b-value2">687.7兆円</p><span class="b-delta">前年比 +3.1%</span><span class="b-asof">2026-04-01 ／ 出典: FRED</span></div>
       <div class="base-card"><p class="b-label2">コアCPI（生鮮食品を除く総合）</p><p class="b-value2">113.6</p><span class="b-delta">前年比 +1.8%</span><span class="b-asof">2026-07-01 ／ 出典: e-Stat（総務省）</span></div>
@@ -287,22 +293,22 @@
 
     <h3 class="subsection-title">読み方 <span class="h2-sub">LLM生成・データからの機械的な読み取り・公式見解ではありません</span></h3>
     <div class="reading-panel">
-      <p><b>景気動向指数と実質GDP：トレンド並みの安定推移:</b> 米国の景気活動指数CFNAIは2026年7月時点で-0.1、3か月移動平均（CFNAI-MA3）は-0.0となり、歴史的なトレンド水準であるゼロ近傍で推移しています。実質GDP成長率（前期比年率）も2025年1月時点の-0.60%から2026年4月時点で1.50%へ持ち直しており、2025年7月の高値4.40%からは落ち着きを見せつつも、景気後退を回避し巡航速度での推移を維持しています。</p>
-      <p><b>株式市場：堅調な推移と高値圏の維持:</b> 株式市場ではS&P500が2026年8月28日時点で7,690を記録し、2025年1月3日時点の5,900から+30.3%と大幅な上昇を示しています。2025年4月11日の安値5,227から持ち直し、2026年8月14日には高値7,763を付けるなど、堅調な企業業績や利下げ期待を背景に底堅い相場展開が継続しています。</p>
-      <p><b>金利と物価動向：利下げ進行と粘着する物価指標:</b> 政策金利であるFF金利誘導目標は3.63%と、2025年1月の4.33%から-0.70%pt低下して金融緩和が進んでいます。一方で10年国債利回りは4.68%と高値圏にあります。物価面ではCPIが332.8、コアCPIが336.8と依然として上昇基調を維持しており、物価の高止まりが長期金利の下落を抑制する要因となっています。</p>
+      <p><b>実体経済：巡航速度での成長が継続:</b> 米国の景気活動指数CFNAIは2026年7月時点で-0.1、3か月移動平均（CFNAI-MA3）は-0.0となり、歴史的トレンド並みの水準で推移しています。起点の-0.5から改善基調にあります。実質GDP成長率（前期比年率）も2025年1月時点の-0.60%から持ち直し、2026年4月時点で1.50%を記録しました。2025年7月の高値4.40%からは減速しているものの、極端な景気後退を回避しつつ巡航速度の拡大基調を保っています。</p>
+      <p><b>金融・物価：利下げ進展とインフレの落ち着き:</b> 物価面では、総合CPI水準が2026年7月に332.8（高値334.0からやや軟化）、コアCPIは336.8と緩やかな上昇にとどまっています。これを受けてFRBは利下げを進めており、FF金利誘導目標は起点の4.33%から2026年7月時点で3.63%まで0.70%pt低下しました。一方で、米国10年国債利回りは2026年8月に4.68%と期間内高値をつけており、長期金利は底堅く推移しています。</p>
+      <p><b>株式市場：堅調な推移と高値圏の維持:</b> 株式市場ではS&P500が2026年8月28日時点で7,690を記録し、起点の5,900から+30.3%の大幅な上昇を見せています。2025年4月には安値5,227まで下落する場面もありましたが、その後は力強く回復し、2026年8月14日には高値7,763を記録しました。金利引き下げと安定した経済指標を背景に、株式市場は底堅いリスクオン環境を維持しています。</p>
     </div>
     <div class="verdict-panel" style="border-left-color:var(--ink-faint)">
       <div class="verdict-head">
-        <span class="gauge-status neutral">巡航速度の推移局面</span>
+        <span class="gauge-status neutral">トレンド並みの安定推移</span>
         <span class="v-title">米国 総合見立て</span>
       </div>
-      <p>米国の景気指標はCFNAI-MA3が-0.0、実質GDP成長率が1.50%と、トレンド並みの巡航速度で安定した推移を示しています。政策金利が3.63%へと引き下げられる中で株式市場は堅調を維持しており、物価の粘着性に留意しつつも全体として底堅い景気循環が継続していると判断されます。</p>
+      <p>米国の主要指標は急激な過熱や深刻な後退を示さず、CFNAI-MA3が-0.0、実質GDP成長率が1.50%と潜在成長率近傍の安定した推移を示しています。利下げが進む一方で長期金利が高止まりするなど金融環境の引き締まり感は残るものの、全体としてトレンド並みの巡航速度を維持した景気循環が続いています。</p>
     </div>
   </section>
 
   <section id="sectors">
     <h2>セクター指標カタログ <span class="h2-sub">38指標・grill-meで調査・カタログ化</span></h2>
-    <p class="section-lede">CI/DI・CFNAI等の全体マクロ指標に加えて、個別株の評価が業種に応じて参照するセクター指標のカタログです。各タブの冒頭には、その分野を代表する指標の実際の時系列推移を掲載し、分野ごとの景況がどう動いているか一目でわかるようにしています（全38指標のうち5分野の代表5指標のみ、他はカード情報のみ）。個別株ページ側では、企業の業種タームからこの中の数指標がLLMにより自動選択されます（下記に実例）。</p>
+    <p class="section-lede">CI/DI・CFNAI等の全体マクロ指標に加えて、個別株の評価が業種に応じて参照するセクター指標のカタログです。各タブの冒頭には、その分野を代表する指標の実際の時系列推移と、その動きが何を意味するかの短い解説（LLM生成）を掲載し、続けて実データが確認できた指標をミニチャートで並べています（全38指標のうち11指標が時系列グラフ化済み、残りはカード情報のみ）。個別株ページ側では、企業の業種タームからこの中の数指標がLLMにより自動選択されます（下記に実例）。</p>
 
     <div class="tabs-block">
       <div class="tab-bar">
@@ -320,16 +326,21 @@
           </div>
           <div class="chart-wrap"><svg id="sector-chart-0" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
           <p class="chart-foot-note">直近（2026-07-01）: 45.8DI(0-100) ／ 2024-01-01以降 -3.4% 低下 ／ 出典: e-Stat:0003348427/tab=140,cat01=100,cat02=100,cat03=100</p>
+          <p class="chart-narrative">景気ウォッチャー調査の現状判断DIは2026年7月時点で45.8となり、起点（48.3）から5.2%低下しました。好不況の節目である50を下回る水準が続いており、2026年4月の安値41.6からは持ち直したものの、街角の景況感には依然として慎重さが残っています。</p>
+        </div>
+        <div class="mini-chart-grid">
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">家計調査</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-0-0" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-06-01）: 290886円 ／ 2015-01-01以降 +0.4% 上昇 ／ 出典: e-Stat:0002070001/tab=01,cat01=059,cat02=03</p>
+          </div>
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">消費動向調査（消費者態度指数）</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-0-1" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-06-01）: 33.8DI(0-100) ／ 2015-01-01以降 -13.3% 低下 ／ 出典: e-Stat:0003446462/tab=200,cat01=1060</p>
+          </div>
         </div>
         <div class="ind-grid">
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">家計調査</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">全国の世帯の収入・支出を毎月調査する統計。個人消費の実勢を最も直接的に映す基礎データ。</p>
-          <p class="ind-meta">総務省統計局 ／ 月次</p>
-        </div>
         <div class="ind-card">
           <div class="ind-card-head">
             <span class="ind-name">商業動態統計</span>
@@ -361,14 +372,6 @@
           </div>
           <p class="ind-desc">小売店主・タクシー運転手など景気の現場を知る人々への聞き取り調査。DIが50超で景況改善。GDPより数週間早く公表される速報性の高い指標。</p>
           <p class="ind-meta">内閣府 ／ 月次</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">消費動向調査（消費者態度指数）</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">一般消費者への意識調査（暮らし向き・耐久財の買い時等）。消費者マインドの先行指標として使われる。</p>
-          <p class="ind-meta">内閣府（経済社会総合研究所） ／ 月次</p>
         </div>
         <div class="ind-card">
           <div class="ind-card-head">
@@ -418,7 +421,20 @@
             <span class="chart-title">企業活動・景況の景況推移: 売上高経常利益率（全産業except金融保険業・全規模）</span>
           </div>
           <div class="chart-wrap"><svg id="sector-chart-1" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
-          <p class="chart-foot-note">直近（2026-01-01）: 8.00% ／ 2024-01-01以降 +0.90%pt 上昇 ／ 出典: e-Stat:0003060191/cat01=154,cat02=104,cat03=26</p>
+          <p class="chart-foot-note">直近（2026-04-01）: 11.30% ／ 2024-01-01以降 +4.20%pt 上昇 ／ 出典: e-Stat:0003060191/cat01=154,cat02=104,cat03=26</p>
+          <p class="chart-narrative">売上高経常利益率は2026年4月時点で11.30%と、起点（9.70%）から1.60%pt上昇し、期間内高値を記録しました。2024年7月の安値6.10%から順調に回復しており、企業の収益力やコスト管理は全般として強固な水準を維持しています。</p>
+        </div>
+        <div class="mini-chart-grid">
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">全国企業短期経済観測調査（日銀短観）</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-1-0" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-04-01）: 22%ポイント ／ 2015-01-01以降 +83.3% 上昇 ／ 出典: BOJ:CO/TK99F1000601GCQ01000</p>
+          </div>
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">法人企業景気予測調査</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-1-1" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-04-01）: -4.5BSI(%pt) ／ 2015-01-01以降 -151.7% 低下 ／ 出典: e-Stat:0003326000/cat01=10,cat02=20,cat03=50,cat04=10,cat05=20</p>
+          </div>
         </div>
         <div class="ind-grid">
         <div class="ind-card">
@@ -436,22 +452,6 @@
           </div>
           <p class="ind-desc">全業種の企業の売上高・利益・設備投資等を四半期ごとに集計。企業部門の実績を業種別・規模別に見られる基礎統計。</p>
           <p class="ind-meta">財務省（財務総合政策研究所） ／ 四半期（年次確報は9月公表）</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">全国企業短期経済観測調査（日銀短観）</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">日銀が大企業・中小企業に業況を尋ねる調査。業況判断DIは景気の代表的なセンチメント指標として金融市場でも注視される。</p>
-          <p class="ind-meta">日本銀行 ／ 四半期（3月・6月・9月・12月）</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">法人企業景気予測調査</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">企業自身による先行き（業況・売上・投資）の予測調査。短観を補完する形で企業マインドの先行きを示す。</p>
-          <p class="ind-meta">内閣府（経済社会総合研究所）・財務省 共管 ／ 四半期（3月・6月・9月・12月中旬公表）</p>
         </div>
         <div class="ind-card">
           <div class="ind-card-head">
@@ -478,6 +478,19 @@
           </div>
           <div class="chart-wrap"><svg id="sector-chart-2" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
           <p class="chart-foot-note">直近（2026-06-01）: 1.05576e+06百万円 ／ 2024-01-01以降 +26.3% 上昇 ／ 出典: e-Stat:0003355222/tab=100,cat01=160,cat02=100</p>
+          <p class="chart-narrative">コア機械受注は2026年6月時点で約105.58万百万円となり、起点から20.7%増加しました。2024年9月の安値約86.31万百万円から着実に伸長し、設備投資需要が底堅く推移していることを示しています。</p>
+        </div>
+        <div class="mini-chart-grid">
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">国際収支統計</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-2-0" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-06-01）: -922.674億円 ／ 2015-01-01以降 -199.2% 低下 ／ 出典: BOJ:BP01/BPBP6JYNCB</p>
+          </div>
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">鉱工業指数（鉄鋼業）</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-2-1" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-03-01）: 101.0 ／ 2018-01-01以降 -21.6% 低下 ／ 出典: e-Stat:0004052177/cat01=0004000</p>
+          </div>
         </div>
         <div class="ind-grid">
         <div class="ind-card">
@@ -487,22 +500,6 @@
           </div>
           <p class="ind-desc">輸出入額を品目別・国別に集計。外需の強弱や為替の影響を確認できる。</p>
           <p class="ind-meta">財務省（関税局） ／ 月次（速報→確報、年次確定）</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">国際収支統計</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">貿易・サービス・投資収益等を含む対外収支全体。日本の対外競争力や資金の出入りを示す。</p>
-          <p class="ind-meta">財務省・日本銀行（共同作成、日銀国際局集計） ／ 月次（速報は取引月の約2ヶ月後）、四半期・年次データもあり</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">鉱工業指数（鉄鋼業）</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">鉄鋼業の生産・出荷・在庫指数。建設・自動車・造船など鉄鋼需要産業の裾野景気を反映する先行性の高い指標。</p>
-          <p class="ind-meta">経済産業省 ／ 月次</p>
         </div>
         <div class="ind-card">
           <div class="ind-card-head">
@@ -545,6 +542,29 @@
           </div>
           <div class="chart-wrap"><svg id="sector-chart-3" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
           <p class="chart-foot-note">直近（2026-07-01）: 2.40% ／ 2024-01-01以降 +0.00%pt 上昇 ／ 出典: e-Stat:0003005865/tab=02,cat01=000,cat02=08,cat03=0</p>
+          <p class="chart-narrative">完全失業率は2026年7月時点で2.40%となり、起点の2.70%から0.30%pt改善しました。2026年3月の高値2.80%から低下しており、雇用情勢は低水準の失業率を維持し、安定した労働環境が継続しています。</p>
+        </div>
+        <div class="mini-chart-grid">
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">消費者物価指数（東京都区部）</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-3-0" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-07-01）: 112.6 ／ 2015-01-01以降 +15.0% 上昇 ／ 出典: e-Stat:0003427113/cat01=0161,area=13A01</p>
+          </div>
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">企業物価指数（旧・卸売物価指数）</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-3-1" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-07-01）: 135.8 ／ 2015-01-01以降 +35.4% 上昇 ／ 出典: BOJ:PR01/PRCG20_2200000000</p>
+          </div>
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">企業向けサービス価格指数</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-3-2" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-07-01）: 115.1 ／ 2015-01-01以降 +20.4% 上昇 ／ 出典: BOJ:PR02/PRCS20_5200000000</p>
+          </div>
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">GDPデフレーター</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-3-3" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-04-01）: 114.9 ／ 2015-01-01以降 +18.5% 上昇 ／ 出典: e-Stat:0003109787/tab=19,cat01=11</p>
+          </div>
         </div>
         <div class="ind-grid">
         <div class="ind-card">
@@ -579,38 +599,6 @@
           <p class="ind-desc">消費者が購入する財・サービスの価格変動。日銀の物価目標（2%）の達成度を測る中心的指標。</p>
           <p class="ind-meta">総務省統計局 ／ 月次</p>
         </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">消費者物価指数（東京都区部）</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">東京都区部のCPIで、全国CPIより1か月早く公表される先行指標。</p>
-          <p class="ind-meta">総務省統計局 ／ 月次</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">企業物価指数（旧・卸売物価指数）</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">企業間で取引される商品の価格変動（旧・卸売物価指数）。原材料コストの上昇が消費者物価に転嫁される前段階を示す。</p>
-          <p class="ind-meta">日本銀行 ／ 月次</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">企業向けサービス価格指数</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">企業間サービス取引の価格変動。人件費や物流費等のコスト圧力がサービス価格に及ぶ程度を示す。</p>
-          <p class="ind-meta">日本銀行 ／ 月次</p>
-        </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">GDPデフレーター</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">名目GDPと実質GDPの比から算出する物価指標。輸入価格の影響を受けにくく、国内需要側の物価圧力を示す。</p>
-          <p class="ind-meta">内閣府（四半期別GDP速報） ／ 四半期</p>
-        </div>
         </div>
       </div>
       <div class="tab-panel" id="cat-tab-4">
@@ -620,6 +608,14 @@
           </div>
           <div class="chart-wrap"><svg id="sector-chart-4" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
           <p class="chart-foot-note">直近（2026-07-01）: 1297.0兆円 ／ 2024-01-01以降 +4.3% 上昇 ／ 出典: BOJ:MD02/MAM1NAM2M2MO</p>
+          <p class="chart-narrative">マネーストックM2（平残）は2026年7月時点で1297.0兆円となり、起点（1256.9兆円）から3.2%増加しました。2024年10月の安値1250.1兆円以降、緩やかな拡大基調が続いており、市場の流動性は底堅く推移しています。</p>
+        </div>
+        <div class="mini-chart-grid">
+          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">マネタリーベース</span></div>
+            <div class="chart-wrap"><svg id="sector-mini-4-0" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">直近（2026-07-01）: 5.54926e+06億円 ／ 2015-01-01以降 +101.5% 上昇 ／ 出典: BOJ:MD01/MABS1AN11</p>
+          </div>
         </div>
         <div class="ind-grid">
         <div class="ind-card">
@@ -662,14 +658,6 @@
           <p class="ind-desc">金融機関から経済全体に供給されている資金量。金融緩和・引き締めの度合いを示す。</p>
           <p class="ind-meta">日本銀行 ／ 月次</p>
         </div>
-        <div class="ind-card">
-          <div class="ind-card-head">
-            <span class="ind-name">マネタリーベース</span>
-            <span class="ind-badge easy">機械取得可</span>
-          </div>
-          <p class="ind-desc">日銀が直接供給する資金量（日銀当座預金＋現金）。金融政策の量的な姿勢を最も直接的に示す。</p>
-          <p class="ind-meta">日本銀行 ／ 月次（平均残高、一部日次速報あり）</p>
-        </div>
         </div>
       </div>
       </div>
@@ -677,7 +665,7 @@
     <div class="example-box">
       <p class="example-title">例: 森永乳業（乳製品製造業）の個別株ページの場合</p>
       <p class="example-lede">業種タームから、このカタログの中から以下がLLMにより自動選択されます（<code>macro/indicators.py</code>）:</p>
-      <ul class="example-list"><li>商業動態統計</li><li>貿易統計（普通貿易統計）</li><li>国際収支統計</li><li>第3次産業活動指数</li><li>企業物価指数（旧・卸売物価指数）</li><li>新車販売台数</li></ul>
+      <ul class="example-list"><li>家計調査</li><li>商業動態統計</li><li>貿易統計（普通貿易統計）</li><li>国際収支統計</li><li>第3次産業活動指数</li><li>企業物価指数（旧・卸売物価指数）</li></ul>
     </div>
   </section>
 
@@ -687,7 +675,7 @@
   </section>
 
   <footer>
-    <p class="gen-meta">ページ生成日時: 2026-08-31 20:04 UTC ／ データ最終更新: 2026-08-28</p>
+    <p class="gen-meta">ページ生成日時: 2026-09-01 16:16 UTC ／ データ最終更新: 2026-09-04</p>
     <p class="sources">
       【日本】景気動向指数: 内閣府「景気動向指数」長期系列（e-Stat API, statsDataId 0003446461） ／
       日経平均株価・10年国債利回り: FRED（series NIKKEI225, IRLTLT01JPM156N） ／
@@ -881,19 +869,69 @@
     if (!pts.length) return;
     const series = [{ name: '景気ウォッチャー調査 現状判断DI（全国・全分野）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
     renderLineChart(document.getElementById('sector-chart-0'), series, {
-      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22,
+      labelEvery: Math.max(1, Math.floor(pts.length / 6)),
       yfmt: v => v.toFixed(0),
       tipfmt: v => v.toLocaleString(),
       endLabel: (s, last) => last.y.toLocaleString(),
     });
   })();
   (function () {
-    const pts = [{"date": "2024-01-01", "value": 7.1}, {"date": "2024-04-01", "value": 9.7}, {"date": "2024-07-01", "value": 6.1}, {"date": "2024-10-01", "value": 7.2}, {"date": "2025-01-01", "value": 7.0}, {"date": "2025-04-01", "value": 9.6}, {"date": "2025-07-01", "value": 7.3}, {"date": "2025-10-01", "value": 7.5}, {"date": "2026-01-01", "value": 8.0}];
+    const pts = [{"date": "2015-01-01", "value": 289847.0}, {"date": "2015-02-01", "value": 265632.0}, {"date": "2015-03-01", "value": 317579.0}, {"date": "2015-04-01", "value": 300480.0}, {"date": "2015-05-01", "value": 286433.0}, {"date": "2015-06-01", "value": 268652.0}, {"date": "2015-07-01", "value": 280471.0}, {"date": "2015-08-01", "value": 291156.0}, {"date": "2015-09-01", "value": 274309.0}, {"date": "2015-10-01", "value": 282401.0}, {"date": "2015-11-01", "value": 273268.0}, {"date": "2015-12-01", "value": 318254.0}, {"date": "2016-01-01", "value": 280973.0}, {"date": "2016-02-01", "value": 269774.0}, {"date": "2016-03-01", "value": 300889.0}, {"date": "2016-04-01", "value": 298520.0}, {"date": "2016-05-01", "value": 281827.0}, {"date": "2016-06-01", "value": 261452.0}, {"date": "2016-07-01", "value": 278067.0}, {"date": "2016-08-01", "value": 276338.0}, {"date": "2016-09-01", "value": 267119.0}, {"date": "2016-10-01", "value": 281961.0}, {"date": "2016-11-01", "value": 270848.0}, {"date": "2016-12-01", "value": 318488.0}, {"date": "2017-01-01", "value": 279249.0}, {"date": "2017-02-01", "value": 260644.0}, {"date": "2017-03-01", "value": 297942.0}, {"date": "2017-04-01", "value": 295929.0}, {"date": "2017-05-01", "value": 283056.0}, {"date": "2017-06-01", "value": 268802.0}, {"date": "2017-07-01", "value": 279197.0}, {"date": "2017-08-01", "value": 280320.0}, {"date": "2017-09-01", "value": 268802.0}, {"date": "2017-10-01", "value": 282872.0}, {"date": "2017-11-01", "value": 277361.0}, {"date": "2017-12-01", "value": 322157.0}, {"date": "2018-01-01", "value": 289703.0}, {"date": "2018-02-01", "value": 265614.0}, {"date": "2018-03-01", "value": 301230.0}, {"date": "2018-04-01", "value": 294439.0}, {"date": "2018-05-01", "value": 281307.0}, {"date": "2018-06-01", "value": 267641.0}, {"date": "2018-07-01", "value": 283387.0}, {"date": "2018-08-01", "value": 292481.0}, {"date": "2018-09-01", "value": 271273.0}, {"date": "2018-10-01", "value": 290396.0}, {"date": "2018-11-01", "value": 281041.0}, {"date": "2018-12-01", "value": 329271.0}, {"date": "2019-01-01", "value": 296345.0}, {"date": "2019-02-01", "value": 271232.0}, {"date": "2019-03-01", "value": 309274.0}, {"date": "2019-04-01", "value": 301136.0}, {"date": "2019-05-01", "value": 300901.0}, {"date": "2019-06-01", "value": 276882.0}, {"date": "2019-07-01", "value": 288026.0}, {"date": "2019-08-01", "value": 296327.0}, {"date": "2019-09-01", "value": 300609.0}, {"date": "2019-10-01", "value": 279671.0}, {"date": "2019-11-01", "value": 278765.0}, {"date": "2019-12-01", "value": 321380.0}, {"date": "2020-01-01", "value": 287173.0}, {"date": "2020-02-01", "value": 271735.0}, {"date": "2020-03-01", "value": 292214.0}, {"date": "2020-04-01", "value": 267922.0}, {"date": "2020-05-01", "value": 252017.0}, {"date": "2020-06-01", "value": 273699.0}, {"date": "2020-07-01", "value": 266897.0}, {"date": "2020-08-01", "value": 276360.0}, {"date": "2020-09-01", "value": 269863.0}, {"date": "2020-10-01", "value": 283508.0}, {"date": "2020-11-01", "value": 278718.0}, {"date": "2020-12-01", "value": 315007.0}, {"date": "2021-01-01", "value": 267760.0}, {"date": "2021-02-01", "value": 252451.0}, {"date": "2021-03-01", "value": 309800.0}, {"date": "2021-04-01", "value": 301043.0}, {"date": "2021-05-01", "value": 281063.0}, {"date": "2021-06-01", "value": 260285.0}, {"date": "2021-07-01", "value": 267710.0}, {"date": "2021-08-01", "value": 266638.0}, {"date": "2021-09-01", "value": 265306.0}, {"date": "2021-10-01", "value": 281996.0}, {"date": "2021-11-01", "value": 277029.0}, {"date": "2021-12-01", "value": 317206.0}, {"date": "2022-01-01", "value": 287801.0}, {"date": "2022-02-01", "value": 257887.0}, {"date": "2022-03-01", "value": 307261.0}, {"date": "2022-04-01", "value": 304510.0}, {"date": "2022-05-01", "value": 287687.0}, {"date": "2022-06-01", "value": 276885.0}, {"date": "2022-07-01", "value": 285313.0}, {"date": "2022-08-01", "value": 289974.0}, {"date": "2022-09-01", "value": 280999.0}, {"date": "2022-10-01", "value": 298006.0}, {"date": "2022-11-01", "value": 285947.0}, {"date": "2022-12-01", "value": 328114.0}, {"date": "2023-01-01", "value": 301646.0}, {"date": "2023-02-01", "value": 272214.0}, {"date": "2023-03-01", "value": 312758.0}, {"date": "2023-04-01", "value": 303076.0}, {"date": "2023-05-01", "value": 286443.0}, {"date": "2023-06-01", "value": 275545.0}, {"date": "2023-07-01", "value": 281736.0}, {"date": "2023-08-01", "value": 293161.0}, {"date": "2023-09-01", "value": 282969.0}, {"date": "2023-10-01", "value": 301974.0}, {"date": "2023-11-01", "value": 286922.0}, {"date": "2023-12-01", "value": 329518.0}, {"date": "2024-01-01", "value": 289467.0}, {"date": "2024-02-01", "value": 279868.0}, {"date": "2024-03-01", "value": 318713.0}, {"date": "2024-04-01", "value": 313300.0}, {"date": "2024-05-01", "value": 290328.0}, {"date": "2024-06-01", "value": 280888.0}, {"date": "2024-07-01", "value": 290931.0}, {"date": "2024-08-01", "value": 297487.0}, {"date": "2024-09-01", "value": 287963.0}, {"date": "2024-10-01", "value": 305819.0}, {"date": "2024-11-01", "value": 295518.0}, {"date": "2024-12-01", "value": 352633.0}, {"date": "2025-01-01", "value": 305521.0}, {"date": "2025-02-01", "value": 290511.0}, {"date": "2025-03-01", "value": 339232.0}, {"date": "2025-04-01", "value": 325717.0}, {"date": "2025-05-01", "value": 316085.0}, {"date": "2025-06-01", "value": 295419.0}, {"date": "2025-07-01", "value": 305694.0}, {"date": "2025-08-01", "value": 313977.0}, {"date": "2025-09-01", "value": 303214.0}, {"date": "2025-10-01", "value": 306872.0}, {"date": "2025-11-01", "value": 314242.0}, {"date": "2025-12-01", "value": 351522.0}, {"date": "2026-01-01", "value": 307584.0}, {"date": "2026-02-01", "value": 289391.0}, {"date": "2026-03-01", "value": 334701.0}, {"date": "2026-04-01", "value": 328969.0}, {"date": "2026-05-01", "value": 320345.0}, {"date": "2026-06-01", "value": 290886.0}];
+    if (!pts.length) return;
+    const series = [{ name: '家計調査 消費支出（二人以上の世帯）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-0-0'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 39.0}, {"date": "2015-02-01", "value": 40.8}, {"date": "2015-03-01", "value": 41.3}, {"date": "2015-04-01", "value": 41.9}, {"date": "2015-05-01", "value": 41.4}, {"date": "2015-06-01", "value": 41.6}, {"date": "2015-07-01", "value": 41.0}, {"date": "2015-08-01", "value": 41.7}, {"date": "2015-09-01", "value": 40.8}, {"date": "2015-10-01", "value": 41.6}, {"date": "2015-11-01", "value": 42.4}, {"date": "2015-12-01", "value": 42.3}, {"date": "2016-01-01", "value": 42.0}, {"date": "2016-02-01", "value": 40.0}, {"date": "2016-03-01", "value": 41.3}, {"date": "2016-04-01", "value": 41.1}, {"date": "2016-05-01", "value": 41.0}, {"date": "2016-06-01", "value": 41.9}, {"date": "2016-07-01", "value": 41.6}, {"date": "2016-08-01", "value": 42.2}, {"date": "2016-09-01", "value": 43.1}, {"date": "2016-10-01", "value": 42.4}, {"date": "2016-11-01", "value": 40.8}, {"date": "2016-12-01", "value": 42.7}, {"date": "2017-01-01", "value": 42.7}, {"date": "2017-02-01", "value": 42.9}, {"date": "2017-03-01", "value": 43.8}, {"date": "2017-04-01", "value": 43.5}, {"date": "2017-05-01", "value": 43.7}, {"date": "2017-06-01", "value": 43.3}, {"date": "2017-07-01", "value": 44.1}, {"date": "2017-08-01", "value": 43.7}, {"date": "2017-09-01", "value": 44.1}, {"date": "2017-10-01", "value": 44.6}, {"date": "2017-11-01", "value": 44.5}, {"date": "2017-12-01", "value": 44.3}, {"date": "2018-01-01", "value": 44.3}, {"date": "2018-02-01", "value": 44.1}, {"date": "2018-03-01", "value": 44.1}, {"date": "2018-04-01", "value": 43.8}, {"date": "2018-05-01", "value": 44.1}, {"date": "2018-06-01", "value": 43.7}, {"date": "2018-07-01", "value": 43.8}, {"date": "2018-08-01", "value": 43.8}, {"date": "2018-09-01", "value": 43.4}, {"date": "2018-10-01", "value": 43.0}, {"date": "2018-11-01", "value": 42.6}, {"date": "2018-12-01", "value": 42.4}, {"date": "2019-01-01", "value": 41.5}, {"date": "2019-02-01", "value": 41.3}, {"date": "2019-03-01", "value": 40.2}, {"date": "2019-04-01", "value": 40.5}, {"date": "2019-05-01", "value": 39.8}, {"date": "2019-06-01", "value": 38.4}, {"date": "2019-07-01", "value": 38.0}, {"date": "2019-08-01", "value": 37.7}, {"date": "2019-09-01", "value": 35.7}, {"date": "2019-10-01", "value": 36.2}, {"date": "2019-11-01", "value": 38.6}, {"date": "2019-12-01", "value": 38.9}, {"date": "2020-01-01", "value": 39.0}, {"date": "2020-02-01", "value": 38.2}, {"date": "2020-03-01", "value": 30.8}, {"date": "2020-04-01", "value": 21.9}, {"date": "2020-05-01", "value": 24.5}, {"date": "2020-06-01", "value": 28.1}, {"date": "2020-07-01", "value": 29.6}, {"date": "2020-08-01", "value": 29.8}, {"date": "2020-09-01", "value": 32.7}, {"date": "2020-10-01", "value": 33.2}, {"date": "2020-11-01", "value": 33.5}, {"date": "2020-12-01", "value": 31.6}, {"date": "2021-01-01", "value": 29.8}, {"date": "2021-02-01", "value": 33.7}, {"date": "2021-03-01", "value": 35.9}, {"date": "2021-04-01", "value": 35.3}, {"date": "2021-05-01", "value": 34.5}, {"date": "2021-06-01", "value": 37.1}, {"date": "2021-07-01", "value": 37.6}, {"date": "2021-08-01", "value": 37.1}, {"date": "2021-09-01", "value": 37.8}, {"date": "2021-10-01", "value": 39.0}, {"date": "2021-11-01", "value": 39.3}, {"date": "2021-12-01", "value": 38.6}, {"date": "2022-01-01", "value": 36.6}, {"date": "2022-02-01", "value": 35.1}, {"date": "2022-03-01", "value": 32.1}, {"date": "2022-04-01", "value": 32.4}, {"date": "2022-05-01", "value": 33.5}, {"date": "2022-06-01", "value": 31.8}, {"date": "2022-07-01", "value": 30.1}, {"date": "2022-08-01", "value": 32.4}, {"date": "2022-09-01", "value": 31.1}, {"date": "2022-10-01", "value": 30.6}, {"date": "2022-11-01", "value": 29.8}, {"date": "2022-12-01", "value": 30.7}, {"date": "2023-01-01", "value": 31.1}, {"date": "2023-02-01", "value": 30.9}, {"date": "2023-03-01", "value": 33.5}, {"date": "2023-04-01", "value": 35.3}, {"date": "2023-05-01", "value": 36.6}, {"date": "2023-06-01", "value": 36.4}, {"date": "2023-07-01", "value": 37.2}, {"date": "2023-08-01", "value": 36.4}, {"date": "2023-09-01", "value": 35.5}, {"date": "2023-10-01", "value": 35.9}, {"date": "2023-11-01", "value": 36.0}, {"date": "2023-12-01", "value": 36.7}, {"date": "2024-01-01", "value": 37.7}, {"date": "2024-02-01", "value": 38.4}, {"date": "2024-03-01", "value": 39.2}, {"date": "2024-04-01", "value": 38.5}, {"date": "2024-05-01", "value": 37.1}, {"date": "2024-06-01", "value": 36.9}, {"date": "2024-07-01", "value": 37.2}, {"date": "2024-08-01", "value": 36.9}, {"date": "2024-09-01", "value": 37.0}, {"date": "2024-10-01", "value": 36.1}, {"date": "2024-11-01", "value": 36.0}, {"date": "2024-12-01", "value": 35.6}, {"date": "2025-01-01", "value": 34.8}, {"date": "2025-02-01", "value": 34.4}, {"date": "2025-03-01", "value": 33.8}, {"date": "2025-04-01", "value": 31.5}, {"date": "2025-05-01", "value": 33.3}, {"date": "2025-06-01", "value": 34.7}, {"date": "2025-07-01", "value": 34.0}, {"date": "2025-08-01", "value": 34.9}, {"date": "2025-09-01", "value": 35.4}, {"date": "2025-10-01", "value": 35.9}, {"date": "2025-11-01", "value": 37.2}, {"date": "2025-12-01", "value": 36.9}, {"date": "2026-01-01", "value": 37.6}, {"date": "2026-02-01", "value": 39.7}, {"date": "2026-03-01", "value": 33.3}, {"date": "2026-04-01", "value": 32.2}, {"date": "2026-05-01", "value": 33.6}, {"date": "2026-06-01", "value": 33.8}];
+    if (!pts.length) return;
+    const series = [{ name: '消費者態度指数（景気動向指数 個別系列）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-0-1'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2024-01-01", "value": 7.1}, {"date": "2024-04-01", "value": 9.7}, {"date": "2024-07-01", "value": 6.1}, {"date": "2024-10-01", "value": 7.2}, {"date": "2025-01-01", "value": 7.0}, {"date": "2025-04-01", "value": 9.6}, {"date": "2025-07-01", "value": 7.3}, {"date": "2025-10-01", "value": 7.5}, {"date": "2026-01-01", "value": 8.0}, {"date": "2026-04-01", "value": 11.3}];
     if (!pts.length) return;
     const series = [{ name: '売上高経常利益率（全産業except金融保険業・全規模）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
     renderLineChart(document.getElementById('sector-chart-1'), series, {
-      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22,
+      labelEvery: Math.max(1, Math.floor(pts.length / 6)),
       yfmt: v => v.toFixed(1),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 12}, {"date": "2015-04-01", "value": 15}, {"date": "2015-07-01", "value": 12}, {"date": "2015-10-01", "value": 12}, {"date": "2016-01-01", "value": 6}, {"date": "2016-04-01", "value": 6}, {"date": "2016-07-01", "value": 6}, {"date": "2016-10-01", "value": 10}, {"date": "2017-01-01", "value": 12}, {"date": "2017-04-01", "value": 17}, {"date": "2017-07-01", "value": 22}, {"date": "2017-10-01", "value": 25}, {"date": "2018-01-01", "value": 24}, {"date": "2018-04-01", "value": 21}, {"date": "2018-07-01", "value": 19}, {"date": "2018-10-01", "value": 19}, {"date": "2019-01-01", "value": 12}, {"date": "2019-04-01", "value": 7}, {"date": "2019-07-01", "value": 5}, {"date": "2019-10-01", "value": 0}, {"date": "2020-01-01", "value": -8}, {"date": "2020-04-01", "value": -34}, {"date": "2020-07-01", "value": -27}, {"date": "2020-10-01", "value": -10}, {"date": "2021-01-01", "value": 5}, {"date": "2021-04-01", "value": 14}, {"date": "2021-07-01", "value": 18}, {"date": "2021-10-01", "value": 18}, {"date": "2022-01-01", "value": 14}, {"date": "2022-04-01", "value": 9}, {"date": "2022-07-01", "value": 8}, {"date": "2022-10-01", "value": 7}, {"date": "2023-01-01", "value": 1}, {"date": "2023-04-01", "value": 5}, {"date": "2023-07-01", "value": 9}, {"date": "2023-10-01", "value": 12}, {"date": "2024-01-01", "value": 11}, {"date": "2024-04-01", "value": 13}, {"date": "2024-07-01", "value": 13}, {"date": "2024-10-01", "value": 14}, {"date": "2025-01-01", "value": 12}, {"date": "2025-04-01", "value": 13}, {"date": "2025-07-01", "value": 14}, {"date": "2025-10-01", "value": 15}, {"date": "2026-01-01", "value": 17}, {"date": "2026-04-01", "value": 22}];
+    if (!pts.length) return;
+    const series = [{ name: '日銀短観 業況判断DI（大企業・製造業・実績）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-1-0'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 8.7}, {"date": "2015-04-01", "value": 9.8}, {"date": "2015-07-01", "value": 10.5}, {"date": "2015-10-01", "value": 5.6}, {"date": "2016-01-01", "value": -9.8}, {"date": "2016-04-01", "value": -9.5}, {"date": "2016-07-01", "value": -0.9}, {"date": "2016-10-01", "value": 3.2}, {"date": "2017-01-01", "value": 5.2}, {"date": "2017-04-01", "value": 4.8}, {"date": "2017-07-01", "value": 6.9}, {"date": "2017-10-01", "value": 13.6}, {"date": "2018-01-01", "value": 8.6}, {"date": "2018-04-01", "value": 7.2}, {"date": "2018-07-01", "value": 6.9}, {"date": "2018-10-01", "value": 4.7}, {"date": "2019-01-01", "value": -1.9}, {"date": "2019-04-01", "value": -3.6}, {"date": "2019-07-01", "value": -1.6}, {"date": "2019-10-01", "value": -14.6}, {"date": "2020-01-01", "value": -20.9}, {"date": "2020-04-01", "value": -71.2}, {"date": "2020-07-01", "value": -14.6}, {"date": "2020-10-01", "value": 5.2}, {"date": "2021-01-01", "value": -21.8}, {"date": "2021-04-01", "value": -13.7}, {"date": "2021-07-01", "value": -1.4}, {"date": "2021-10-01", "value": 22.0}, {"date": "2022-01-01", "value": -16.3}, {"date": "2022-04-01", "value": 0.4}, {"date": "2022-07-01", "value": -1.8}, {"date": "2022-10-01", "value": 0.1}, {"date": "2023-01-01", "value": -2.9}, {"date": "2023-04-01", "value": 15.2}, {"date": "2023-07-01", "value": 13.3}, {"date": "2023-10-01", "value": 7.4}, {"date": "2024-01-01", "value": 8.0}, {"date": "2024-04-01", "value": 5.8}, {"date": "2024-07-01", "value": 5.5}, {"date": "2024-10-01", "value": 4.2}, {"date": "2025-01-01", "value": 3.1}, {"date": "2025-04-01", "value": -6.2}, {"date": "2025-07-01", "value": 1.5}, {"date": "2025-10-01", "value": 6.9}, {"date": "2026-01-01", "value": 8.0}, {"date": "2026-04-01", "value": -4.5}];
+    if (!pts.length) return;
+    const series = [{ name: '法人企業景気予測調査 国内景況判断BSI（大企業・全産業・当期）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-1-1'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(0),
       tipfmt: v => v.toLocaleString(),
       endLabel: (s, last) => last.y.toLocaleString(),
     });
@@ -903,8 +941,33 @@
     if (!pts.length) return;
     const series = [{ name: 'コア機械受注（民需、船舶・電力除く、季調系列）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
     renderLineChart(document.getElementById('sector-chart-2'), series, {
-      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22,
+      labelEvery: Math.max(1, Math.floor(pts.length / 6)),
       yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 929.66535866}, {"date": "2015-02-01", "value": 14660.06336511}, {"date": "2015-03-01", "value": 27519.26268973}, {"date": "2015-04-01", "value": 13717.85960308}, {"date": "2015-05-01", "value": 18813.68940562}, {"date": "2015-06-01", "value": 6587.33651824}, {"date": "2015-07-01", "value": 18482.78059089}, {"date": "2015-08-01", "value": 16581.49737408}, {"date": "2015-09-01", "value": 14846.95741197}, {"date": "2015-10-01", "value": 14019.20620955}, {"date": "2015-11-01", "value": 10759.10859076}, {"date": "2015-12-01", "value": 8276.61668492}, {"date": "2016-01-01", "value": 6394.85118887}, {"date": "2016-02-01", "value": 24364.32501714}, {"date": "2016-03-01", "value": 30112.39777133}, {"date": "2016-04-01", "value": 19189.14191168}, {"date": "2016-05-01", "value": 18827.68886949}, {"date": "2016-06-01", "value": 10972.87788887}, {"date": "2016-07-01", "value": 20997.5693476}, {"date": "2016-08-01", "value": 20938.52092746}, {"date": "2016-09-01", "value": 19527.73339597}, {"date": "2016-10-01", "value": 16454.54490305}, {"date": "2016-11-01", "value": 14716.36838256}, {"date": "2016-12-01", "value": 11413.53074793}, {"date": "2017-01-01", "value": 2290.37877583}, {"date": "2017-02-01", "value": 30322.0932122}, {"date": "2017-03-01", "value": 31120.98982152}, {"date": "2017-04-01", "value": 20116.8391555}, {"date": "2017-05-01", "value": 17777.83827244}, {"date": "2017-06-01", "value": 10122.44341443}, {"date": "2017-07-01", "value": 24614.47497976}, {"date": "2017-08-01", "value": 25111.88132269}, {"date": "2017-09-01", "value": 22804.72399435}, {"date": "2017-10-01", "value": 21893.56019465}, {"date": "2017-11-01", "value": 13706.8810966}, {"date": "2017-12-01", "value": 7897.14448532}, {"date": "2018-01-01", "value": 6288.64945123}, {"date": "2018-02-01", "value": 21570.00118451}, {"date": "2018-03-01", "value": 32090.54080827}, {"date": "2018-04-01", "value": 19172.21449267}, {"date": "2018-05-01", "value": 19221.05880548}, {"date": "2018-06-01", "value": 11864.41575703}, {"date": "2018-07-01", "value": 20233.330299}, {"date": "2018-08-01", "value": 18097.04402473}, {"date": "2018-09-01", "value": 19801.00238248}, {"date": "2018-10-01", "value": 13285.95818811}, {"date": "2018-11-01", "value": 8926.79514832}, {"date": "2018-12-01", "value": 4495.94871144}, {"date": "2019-01-01", "value": 4956.48344478}, {"date": "2019-02-01", "value": 25403.00071306}, {"date": "2019-03-01", "value": 28379.80125996}, {"date": "2019-04-01", "value": 16540.18897398}, {"date": "2019-05-01", "value": 16347.64557844}, {"date": "2019-06-01", "value": 10993.69842338}, {"date": "2019-07-01", "value": 20394.88095751}, {"date": "2019-08-01", "value": 20309.21515886}, {"date": "2019-09-01", "value": 14147.69336896}, {"date": "2019-10-01", "value": 17168.02864485}, {"date": "2019-11-01", "value": 12344.2909298}, {"date": "2019-12-01", "value": 5528.04729114}, {"date": "2020-01-01", "value": 4825.79201388}, {"date": "2020-02-01", "value": 29742.3964977}, {"date": "2020-03-01", "value": 18370.47884717}, {"date": "2020-04-01", "value": 16.33734119}, {"date": "2020-05-01", "value": 9215.04269617}, {"date": "2020-06-01", "value": -302.02879048}, {"date": "2020-07-01", "value": 13798.15606897}, {"date": "2020-08-01", "value": 19530.44630874}, {"date": "2020-09-01", "value": 15645.84607303}, {"date": "2020-10-01", "value": 19737.3975954}, {"date": "2020-11-01", "value": 17725.55872535}, {"date": "2020-12-01", "value": 11611.25700762}, {"date": "2021-01-01", "value": 6173.59066112}, {"date": "2021-02-01", "value": 29892.796903}, {"date": "2021-03-01", "value": 26298.75574209}, {"date": "2021-04-01", "value": 17722.60156821}, {"date": "2021-05-01", "value": 24323.74755529}, {"date": "2021-06-01", "value": 13382.91256806}, {"date": "2021-07-01", "value": 23325.72557245}, {"date": "2021-08-01", "value": 21171.35452903}, {"date": "2021-09-01", "value": 16346.82620197}, {"date": "2021-10-01", "value": 17074.72002237}, {"date": "2021-11-01", "value": 15565.93684126}, {"date": "2021-12-01", "value": 3388.06430062}, {"date": "2022-01-01", "value": -6603.14658538}, {"date": "2022-02-01", "value": 22602.55355038}, {"date": "2022-03-01", "value": 32918.43244641}, {"date": "2022-04-01", "value": 10601.98274795}, {"date": "2022-05-01", "value": 7557.10619389}, {"date": "2022-06-01", "value": 4836.95899956}, {"date": "2022-07-01", "value": 8196.69653234}, {"date": "2022-08-01", "value": 6216.92792955}, {"date": "2022-09-01", "value": 7894.60444802}, {"date": "2022-10-01", "value": -517.2689155}, {"date": "2022-11-01", "value": 17961.82854768}, {"date": "2022-12-01", "value": 2758.82035746}, {"date": "2023-01-01", "value": -20690.57860346}, {"date": "2023-02-01", "value": 22821.49275678}, {"date": "2023-03-01", "value": 23455.18891318}, {"date": "2023-04-01", "value": 18891.74763074}, {"date": "2023-05-01", "value": 21771.34360479}, {"date": "2023-06-01", "value": 17037.14483831}, {"date": "2023-07-01", "value": 29381.96285423}, {"date": "2023-08-01", "value": 23930.69252905}, {"date": "2023-09-01", "value": 29655.03723549}, {"date": "2023-10-01", "value": 27901.20650978}, {"date": "2023-11-01", "value": 21295.87129565}, {"date": "2023-12-01", "value": 9303.80997912}, {"date": "2024-01-01", "value": 3118.38756973}, {"date": "2024-02-01", "value": 27498.10722403}, {"date": "2024-03-01", "value": 34425.83502724}, {"date": "2024-04-01", "value": 20960.85856075}, {"date": "2024-05-01", "value": 29177.76930045}, {"date": "2024-06-01", "value": 19152.60566541}, {"date": "2024-07-01", "value": 35704.25763855}, {"date": "2024-08-01", "value": 38454.48521972}, {"date": "2024-09-01", "value": 17075.19727192}, {"date": "2024-10-01", "value": 23538.46578653}, {"date": "2024-11-01", "value": 33060.66027448}, {"date": "2024-12-01", "value": 10606.89639524}, {"date": "2025-01-01", "value": -3052.92590313}, {"date": "2025-02-01", "value": 39383.6231526}, {"date": "2025-03-01", "value": 36253.42586264}, {"date": "2025-04-01", "value": 23700.34989018}, {"date": "2025-05-01", "value": 33204.9212964}, {"date": "2025-06-01", "value": 12817.55703448}, {"date": "2025-07-01", "value": 25862.76348432}, {"date": "2025-08-01", "value": 36281.13507809}, {"date": "2025-09-01", "value": 44446.73840442}, {"date": "2025-10-01", "value": 27434.55704374}, {"date": "2025-11-01", "value": 36763.80544288}, {"date": "2025-12-01", "value": 9254.46171155}, {"date": "2026-01-01", "value": 9364.6405458}, {"date": "2026-02-01", "value": 39334.730528}, {"date": "2026-03-01", "value": 47754.43599918}, {"date": "2026-04-01", "value": 39078.47982356}, {"date": "2026-05-01", "value": 39682.53973505}, {"date": "2026-06-01", "value": -922.67445095}];
+    if (!pts.length) return;
+    const series = [{ name: '国際収支統計 経常収支', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-2-0'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2018-01-01", "value": 128.8}, {"date": "2018-02-01", "value": 129.4}, {"date": "2018-03-01", "value": 129.5}, {"date": "2018-04-01", "value": 130.0}, {"date": "2018-05-01", "value": 130.3}, {"date": "2018-06-01", "value": 129.8}, {"date": "2018-07-01", "value": 125.0}, {"date": "2018-08-01", "value": 128.5}, {"date": "2018-09-01", "value": 124.1}, {"date": "2018-10-01", "value": 127.5}, {"date": "2018-11-01", "value": 128.4}, {"date": "2018-12-01", "value": 127.6}, {"date": "2019-01-01", "value": 123.7}, {"date": "2019-02-01", "value": 123.6}, {"date": "2019-03-01", "value": 126.0}, {"date": "2019-04-01", "value": 125.1}, {"date": "2019-05-01", "value": 123.5}, {"date": "2019-06-01", "value": 124.3}, {"date": "2019-07-01", "value": 123.8}, {"date": "2019-08-01", "value": 119.5}, {"date": "2019-09-01", "value": 119.4}, {"date": "2019-10-01", "value": 116.1}, {"date": "2019-11-01", "value": 114.9}, {"date": "2019-12-01", "value": 114.2}, {"date": "2020-01-01", "value": 117.6}, {"date": "2020-02-01", "value": 115.2}, {"date": "2020-03-01", "value": 111.1}, {"date": "2020-04-01", "value": 93.8}, {"date": "2020-05-01", "value": 79.4}, {"date": "2020-06-01", "value": 76.6}, {"date": "2020-07-01", "value": 85.9}, {"date": "2020-08-01", "value": 93.7}, {"date": "2020-09-01", "value": 98.5}, {"date": "2020-10-01", "value": 105.6}, {"date": "2020-11-01", "value": 107.9}, {"date": "2020-12-01", "value": 111.6}, {"date": "2021-01-01", "value": 115.3}, {"date": "2021-02-01", "value": 115.3}, {"date": "2021-03-01", "value": 117.5}, {"date": "2021-04-01", "value": 117.8}, {"date": "2021-05-01", "value": 116.1}, {"date": "2021-06-01", "value": 118.6}, {"date": "2021-07-01", "value": 120.2}, {"date": "2021-08-01", "value": 117.4}, {"date": "2021-09-01", "value": 116.6}, {"date": "2021-10-01", "value": 112.5}, {"date": "2021-11-01", "value": 116.4}, {"date": "2021-12-01", "value": 117.4}, {"date": "2022-01-01", "value": 112.7}, {"date": "2022-02-01", "value": 112.1}, {"date": "2022-03-01", "value": 111.4}, {"date": "2022-04-01", "value": 109.9}, {"date": "2022-05-01", "value": 109.4}, {"date": "2022-06-01", "value": 105.8}, {"date": "2022-07-01", "value": 106.3}, {"date": "2022-08-01", "value": 108.2}, {"date": "2022-09-01", "value": 108.7}, {"date": "2022-10-01", "value": 107.6}, {"date": "2022-11-01", "value": 107.5}, {"date": "2022-12-01", "value": 104.9}, {"date": "2023-01-01", "value": 103.0}, {"date": "2023-02-01", "value": 105.9}, {"date": "2023-03-01", "value": 106.2}, {"date": "2023-04-01", "value": 105.6}, {"date": "2023-05-01", "value": 107.6}, {"date": "2023-06-01", "value": 107.4}, {"date": "2023-07-01", "value": 108.1}, {"date": "2023-08-01", "value": 106.7}, {"date": "2023-09-01", "value": 106.9}, {"date": "2023-10-01", "value": 106.3}, {"date": "2023-11-01", "value": 105.1}, {"date": "2023-12-01", "value": 105.4}, {"date": "2024-01-01", "value": 103.6}, {"date": "2024-02-01", "value": 102.9}, {"date": "2024-03-01", "value": 100.6}, {"date": "2024-04-01", "value": 101.9}, {"date": "2024-05-01", "value": 102.5}, {"date": "2024-06-01", "value": 101.6}, {"date": "2024-07-01", "value": 103.4}, {"date": "2024-08-01", "value": 99.4}, {"date": "2024-09-01", "value": 100.8}, {"date": "2024-10-01", "value": 100.6}, {"date": "2024-11-01", "value": 99.5}, {"date": "2024-12-01", "value": 101.3}, {"date": "2025-01-01", "value": 101.2}, {"date": "2025-02-01", "value": 100.8}, {"date": "2025-03-01", "value": 100.3}, {"date": "2025-04-01", "value": 100.5}, {"date": "2025-05-01", "value": 100.2}, {"date": "2025-06-01", "value": 100.2}, {"date": "2025-07-01", "value": 100.6}, {"date": "2025-08-01", "value": 99.3}, {"date": "2025-09-01", "value": 99.4}, {"date": "2025-10-01", "value": 98.9}, {"date": "2025-11-01", "value": 98.7}, {"date": "2025-12-01", "value": 98.9}, {"date": "2026-01-01", "value": 100.1}, {"date": "2026-02-01", "value": 101.4}, {"date": "2026-03-01", "value": 101.0}];
+    if (!pts.length) return;
+    const series = [{ name: '鉱工業指数 付加価値額生産（鉄鋼業、季節調整済、2020年=100）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-2-1'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(1),
       tipfmt: v => v.toLocaleString(),
       endLabel: (s, last) => last.y.toLocaleString(),
     });
@@ -914,7 +977,56 @@
     if (!pts.length) return;
     const series = [{ name: '完全失業率（全国・総数）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
     renderLineChart(document.getElementById('sector-chart-3'), series, {
-      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22,
+      labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      yfmt: v => v.toFixed(1),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 97.9}, {"date": "2015-02-01", "value": 98.0}, {"date": "2015-03-01", "value": 98.4}, {"date": "2015-04-01", "value": 98.8}, {"date": "2015-05-01", "value": 98.8}, {"date": "2015-06-01", "value": 98.7}, {"date": "2015-07-01", "value": 98.5}, {"date": "2015-08-01", "value": 98.6}, {"date": "2015-09-01", "value": 98.5}, {"date": "2015-10-01", "value": 98.6}, {"date": "2015-11-01", "value": 98.6}, {"date": "2015-12-01", "value": 98.6}, {"date": "2016-01-01", "value": 97.9}, {"date": "2016-02-01", "value": 98.0}, {"date": "2016-03-01", "value": 98.3}, {"date": "2016-04-01", "value": 98.5}, {"date": "2016-05-01", "value": 98.4}, {"date": "2016-06-01", "value": 98.4}, {"date": "2016-07-01", "value": 98.1}, {"date": "2016-08-01", "value": 98.2}, {"date": "2016-09-01", "value": 98.0}, {"date": "2016-10-01", "value": 98.2}, {"date": "2016-11-01", "value": 98.2}, {"date": "2016-12-01", "value": 98.0}, {"date": "2017-01-01", "value": 97.6}, {"date": "2017-02-01", "value": 97.7}, {"date": "2017-03-01", "value": 97.9}, {"date": "2017-04-01", "value": 98.3}, {"date": "2017-05-01", "value": 98.5}, {"date": "2017-06-01", "value": 98.3}, {"date": "2017-07-01", "value": 98.2}, {"date": "2017-08-01", "value": 98.6}, {"date": "2017-09-01", "value": 98.5}, {"date": "2017-10-01", "value": 98.8}, {"date": "2017-11-01", "value": 98.8}, {"date": "2017-12-01", "value": 98.8}, {"date": "2018-01-01", "value": 98.3}, {"date": "2018-02-01", "value": 98.5}, {"date": "2018-03-01", "value": 98.7}, {"date": "2018-04-01", "value": 98.9}, {"date": "2018-05-01", "value": 99.0}, {"date": "2018-06-01", "value": 99.0}, {"date": "2018-07-01", "value": 99.0}, {"date": "2018-08-01", "value": 99.4}, {"date": "2018-09-01", "value": 99.4}, {"date": "2018-10-01", "value": 99.8}, {"date": "2018-11-01", "value": 99.8}, {"date": "2018-12-01", "value": 99.7}, {"date": "2019-01-01", "value": 99.4}, {"date": "2019-02-01", "value": 99.7}, {"date": "2019-03-01", "value": 99.8}, {"date": "2019-04-01", "value": 100.2}, {"date": "2019-05-01", "value": 100.1}, {"date": "2019-06-01", "value": 99.9}, {"date": "2019-07-01", "value": 99.8}, {"date": "2019-08-01", "value": 100.2}, {"date": "2019-09-01", "value": 99.9}, {"date": "2019-10-01", "value": 100.3}, {"date": "2019-11-01", "value": 100.4}, {"date": "2019-12-01", "value": 100.5}, {"date": "2020-01-01", "value": 100.2}, {"date": "2020-02-01", "value": 100.2}, {"date": "2020-03-01", "value": 100.3}, {"date": "2020-04-01", "value": 100.2}, {"date": "2020-05-01", "value": 100.3}, {"date": "2020-06-01", "value": 100.1}, {"date": "2020-07-01", "value": 100.2}, {"date": "2020-08-01", "value": 99.9}, {"date": "2020-09-01", "value": 99.7}, {"date": "2020-10-01", "value": 99.8}, {"date": "2020-11-01", "value": 99.7}, {"date": "2020-12-01", "value": 99.5}, {"date": "2021-01-01", "value": 99.7}, {"date": "2021-02-01", "value": 99.8}, {"date": "2021-03-01", "value": 100.0}, {"date": "2021-04-01", "value": 99.3}, {"date": "2021-05-01", "value": 99.6}, {"date": "2021-06-01", "value": 99.5}, {"date": "2021-07-01", "value": 99.8}, {"date": "2021-08-01", "value": 99.9}, {"date": "2021-09-01", "value": 99.8}, {"date": "2021-10-01", "value": 99.8}, {"date": "2021-11-01", "value": 100.0}, {"date": "2021-12-01", "value": 100.0}, {"date": "2022-01-01", "value": 99.9}, {"date": "2022-02-01", "value": 100.4}, {"date": "2022-03-01", "value": 100.8}, {"date": "2022-04-01", "value": 101.3}, {"date": "2022-05-01", "value": 101.5}, {"date": "2022-06-01", "value": 101.6}, {"date": "2022-07-01", "value": 102.1}, {"date": "2022-08-01", "value": 102.4}, {"date": "2022-09-01", "value": 102.7}, {"date": "2022-10-01", "value": 103.2}, {"date": "2022-11-01", "value": 103.6}, {"date": "2022-12-01", "value": 103.9}, {"date": "2023-01-01", "value": 104.2}, {"date": "2023-02-01", "value": 103.6}, {"date": "2023-03-01", "value": 104.0}, {"date": "2023-04-01", "value": 104.8}, {"date": "2023-05-01", "value": 104.7}, {"date": "2023-06-01", "value": 104.8}, {"date": "2023-07-01", "value": 105.2}, {"date": "2023-08-01", "value": 105.3}, {"date": "2023-09-01", "value": 105.2}, {"date": "2023-10-01", "value": 106.0}, {"date": "2023-11-01", "value": 106.0}, {"date": "2023-12-01", "value": 106.1}, {"date": "2024-01-01", "value": 106.0}, {"date": "2024-02-01", "value": 106.2}, {"date": "2024-03-01", "value": 106.5}, {"date": "2024-04-01", "value": 106.4}, {"date": "2024-05-01", "value": 106.7}, {"date": "2024-06-01", "value": 107.0}, {"date": "2024-07-01", "value": 107.4}, {"date": "2024-08-01", "value": 107.9}, {"date": "2024-09-01", "value": 107.3}, {"date": "2024-10-01", "value": 107.9}, {"date": "2024-11-01", "value": 108.3}, {"date": "2024-12-01", "value": 108.6}, {"date": "2025-01-01", "value": 108.7}, {"date": "2025-02-01", "value": 108.5}, {"date": "2025-03-01", "value": 109.1}, {"date": "2025-04-01", "value": 110.0}, {"date": "2025-05-01", "value": 110.5}, {"date": "2025-06-01", "value": 110.3}, {"date": "2025-07-01", "value": 110.5}, {"date": "2025-08-01", "value": 110.6}, {"date": "2025-09-01", "value": 110.0}, {"date": "2025-10-01", "value": 111.0}, {"date": "2025-11-01", "value": 111.4}, {"date": "2025-12-01", "value": 111.1}, {"date": "2026-01-01", "value": 110.9}, {"date": "2026-02-01", "value": 110.5}, {"date": "2026-03-01", "value": 111.0}, {"date": "2026-04-01", "value": 111.7}, {"date": "2026-05-01", "value": 112.0}, {"date": "2026-06-01", "value": 112.2}, {"date": "2026-07-01", "value": 112.6}];
+    if (!pts.length) return;
+    const series = [{ name: 'コアCPI（生鮮食品を除く総合、東京都区部、2020年基準）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-3-0'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(1),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 100.3}, {"date": "2015-02-01", "value": 100.3}, {"date": "2015-03-01", "value": 100.5}, {"date": "2015-04-01", "value": 100.5}, {"date": "2015-05-01", "value": 100.7}, {"date": "2015-06-01", "value": 100.6}, {"date": "2015-07-01", "value": 100.2}, {"date": "2015-08-01", "value": 99.5}, {"date": "2015-09-01", "value": 99.1}, {"date": "2015-10-01", "value": 98.4}, {"date": "2015-11-01", "value": 98.4}, {"date": "2015-12-01", "value": 98}, {"date": "2016-01-01", "value": 96.9}, {"date": "2016-02-01", "value": 96.6}, {"date": "2016-03-01", "value": 96.5}, {"date": "2016-04-01", "value": 96.1}, {"date": "2016-05-01", "value": 96.1}, {"date": "2016-06-01", "value": 96.1}, {"date": "2016-07-01", "value": 96}, {"date": "2016-08-01", "value": 95.7}, {"date": "2016-09-01", "value": 95.8}, {"date": "2016-10-01", "value": 95.7}, {"date": "2016-11-01", "value": 96.1}, {"date": "2016-12-01", "value": 96.8}, {"date": "2017-01-01", "value": 97.4}, {"date": "2017-02-01", "value": 97.6}, {"date": "2017-03-01", "value": 97.9}, {"date": "2017-04-01", "value": 98.1}, {"date": "2017-05-01", "value": 98.1}, {"date": "2017-06-01", "value": 98.2}, {"date": "2017-07-01", "value": 98.4}, {"date": "2017-08-01", "value": 98.4}, {"date": "2017-09-01", "value": 98.7}, {"date": "2017-10-01", "value": 99.1}, {"date": "2017-11-01", "value": 99.5}, {"date": "2017-12-01", "value": 99.7}, {"date": "2018-01-01", "value": 100}, {"date": "2018-02-01", "value": 100}, {"date": "2018-03-01", "value": 99.9}, {"date": "2018-04-01", "value": 100.3}, {"date": "2018-05-01", "value": 100.8}, {"date": "2018-06-01", "value": 101.1}, {"date": "2018-07-01", "value": 101.5}, {"date": "2018-08-01", "value": 101.5}, {"date": "2018-09-01", "value": 101.7}, {"date": "2018-10-01", "value": 102.1}, {"date": "2018-11-01", "value": 101.7}, {"date": "2018-12-01", "value": 101.1}, {"date": "2019-01-01", "value": 100.5}, {"date": "2019-02-01", "value": 100.9}, {"date": "2019-03-01", "value": 101.2}, {"date": "2019-04-01", "value": 101.6}, {"date": "2019-05-01", "value": 101.4}, {"date": "2019-06-01", "value": 100.9}, {"date": "2019-07-01", "value": 100.8}, {"date": "2019-08-01", "value": 100.6}, {"date": "2019-09-01", "value": 100.6}, {"date": "2019-10-01", "value": 101.7}, {"date": "2019-11-01", "value": 101.8}, {"date": "2019-12-01", "value": 102}, {"date": "2020-01-01", "value": 102.1}, {"date": "2020-02-01", "value": 101.7}, {"date": "2020-03-01", "value": 100.8}, {"date": "2020-04-01", "value": 99.2}, {"date": "2020-05-01", "value": 98.7}, {"date": "2020-06-01", "value": 99.3}, {"date": "2020-07-01", "value": 99.8}, {"date": "2020-08-01", "value": 99.9}, {"date": "2020-09-01", "value": 99.8}, {"date": "2020-10-01", "value": 99.5}, {"date": "2020-11-01", "value": 99.4}, {"date": "2020-12-01", "value": 99.8}, {"date": "2021-01-01", "value": 100.3}, {"date": "2021-02-01", "value": 100.8}, {"date": "2021-03-01", "value": 101.8}, {"date": "2021-04-01", "value": 103}, {"date": "2021-05-01", "value": 103.6}, {"date": "2021-06-01", "value": 104.3}, {"date": "2021-07-01", "value": 105.4}, {"date": "2021-08-01", "value": 105.6}, {"date": "2021-09-01", "value": 106}, {"date": "2021-10-01", "value": 107.7}, {"date": "2021-11-01", "value": 108.4}, {"date": "2021-12-01", "value": 108.4}, {"date": "2022-01-01", "value": 109.5}, {"date": "2022-02-01", "value": 110.4}, {"date": "2022-03-01", "value": 111.5}, {"date": "2022-04-01", "value": 113.5}, {"date": "2022-05-01", "value": 113.5}, {"date": "2022-06-01", "value": 114.5}, {"date": "2022-07-01", "value": 115.4}, {"date": "2022-08-01", "value": 115.9}, {"date": "2022-09-01", "value": 117}, {"date": "2022-10-01", "value": 118.2}, {"date": "2022-11-01", "value": 119.2}, {"date": "2022-12-01", "value": 119.9}, {"date": "2023-01-01", "value": 120}, {"date": "2023-02-01", "value": 119.7}, {"date": "2023-03-01", "value": 119.8}, {"date": "2023-04-01", "value": 120.4}, {"date": "2023-05-01", "value": 119.6}, {"date": "2023-06-01", "value": 119.6}, {"date": "2023-07-01", "value": 119.7}, {"date": "2023-08-01", "value": 120}, {"date": "2023-09-01", "value": 119.8}, {"date": "2023-10-01", "value": 119.6}, {"date": "2023-11-01", "value": 119.9}, {"date": "2023-12-01", "value": 120.2}, {"date": "2024-01-01", "value": 120.4}, {"date": "2024-02-01", "value": 120.6}, {"date": "2024-03-01", "value": 121}, {"date": "2024-04-01", "value": 121.8}, {"date": "2024-05-01", "value": 122.7}, {"date": "2024-06-01", "value": 123}, {"date": "2024-07-01", "value": 123.6}, {"date": "2024-08-01", "value": 123.2}, {"date": "2024-09-01", "value": 123.6}, {"date": "2024-10-01", "value": 124.2}, {"date": "2024-11-01", "value": 124.6}, {"date": "2024-12-01", "value": 125.1}, {"date": "2025-01-01", "value": 125.5}, {"date": "2025-02-01", "value": 125.8}, {"date": "2025-03-01", "value": 126.2}, {"date": "2025-04-01", "value": 126.6}, {"date": "2025-05-01", "value": 126.5}, {"date": "2025-06-01", "value": 126.4}, {"date": "2025-07-01", "value": 126.7}, {"date": "2025-08-01", "value": 126.4}, {"date": "2025-09-01", "value": 127}, {"date": "2025-10-01", "value": 127.6}, {"date": "2025-11-01", "value": 128}, {"date": "2025-12-01", "value": 128.1}, {"date": "2026-01-01", "value": 128.5}, {"date": "2026-02-01", "value": 128.5}, {"date": "2026-03-01", "value": 129.8}, {"date": "2026-04-01", "value": 133.4}, {"date": "2026-05-01", "value": 134.9}, {"date": "2026-06-01", "value": 135.6}, {"date": "2026-07-01", "value": 135.8}];
+    if (!pts.length) return;
+    const series = [{ name: '企業物価指数（国内企業物価指数、総平均、2020年=100）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-3-1'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(1),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 95.6}, {"date": "2015-02-01", "value": 95.7}, {"date": "2015-03-01", "value": 96.3}, {"date": "2015-04-01", "value": 96}, {"date": "2015-05-01", "value": 96.1}, {"date": "2015-06-01", "value": 96}, {"date": "2015-07-01", "value": 96.2}, {"date": "2015-08-01", "value": 96.1}, {"date": "2015-09-01", "value": 95.9}, {"date": "2015-10-01", "value": 95.9}, {"date": "2015-11-01", "value": 96.2}, {"date": "2015-12-01", "value": 96.2}, {"date": "2016-01-01", "value": 95.8}, {"date": "2016-02-01", "value": 95.8}, {"date": "2016-03-01", "value": 96.4}, {"date": "2016-04-01", "value": 96.2}, {"date": "2016-05-01", "value": 96.1}, {"date": "2016-06-01", "value": 96.1}, {"date": "2016-07-01", "value": 96.3}, {"date": "2016-08-01", "value": 96.2}, {"date": "2016-09-01", "value": 96.2}, {"date": "2016-10-01", "value": 96.3}, {"date": "2016-11-01", "value": 96.5}, {"date": "2016-12-01", "value": 96.6}, {"date": "2017-01-01", "value": 96.3}, {"date": "2017-02-01", "value": 96.4}, {"date": "2017-03-01", "value": 97.2}, {"date": "2017-04-01", "value": 96.9}, {"date": "2017-05-01", "value": 96.9}, {"date": "2017-06-01", "value": 96.8}, {"date": "2017-07-01", "value": 96.9}, {"date": "2017-08-01", "value": 96.9}, {"date": "2017-09-01", "value": 96.9}, {"date": "2017-10-01", "value": 97.2}, {"date": "2017-11-01", "value": 97.4}, {"date": "2017-12-01", "value": 97.6}, {"date": "2018-01-01", "value": 97.1}, {"date": "2018-02-01", "value": 97.4}, {"date": "2018-03-01", "value": 98}, {"date": "2018-04-01", "value": 98}, {"date": "2018-05-01", "value": 97.8}, {"date": "2018-06-01", "value": 97.9}, {"date": "2018-07-01", "value": 98.2}, {"date": "2018-08-01", "value": 98.2}, {"date": "2018-09-01", "value": 98.2}, {"date": "2018-10-01", "value": 98.5}, {"date": "2018-11-01", "value": 98.7}, {"date": "2018-12-01", "value": 98.7}, {"date": "2019-01-01", "value": 98.2}, {"date": "2019-02-01", "value": 98.3}, {"date": "2019-03-01", "value": 99}, {"date": "2019-04-01", "value": 98.8}, {"date": "2019-05-01", "value": 98.7}, {"date": "2019-06-01", "value": 98.6}, {"date": "2019-07-01", "value": 98.6}, {"date": "2019-08-01", "value": 98.6}, {"date": "2019-09-01", "value": 98.6}, {"date": "2019-10-01", "value": 100.6}, {"date": "2019-11-01", "value": 100.7}, {"date": "2019-12-01", "value": 100.7}, {"date": "2020-01-01", "value": 100.7}, {"date": "2020-02-01", "value": 100.6}, {"date": "2020-03-01", "value": 100.6}, {"date": "2020-04-01", "value": 99.4}, {"date": "2020-05-01", "value": 98.8}, {"date": "2020-06-01", "value": 99.3}, {"date": "2020-07-01", "value": 99.7}, {"date": "2020-08-01", "value": 99.7}, {"date": "2020-09-01", "value": 99.9}, {"date": "2020-10-01", "value": 100.2}, {"date": "2020-11-01", "value": 100.5}, {"date": "2020-12-01", "value": 100.6}, {"date": "2021-01-01", "value": 100}, {"date": "2021-02-01", "value": 100.4}, {"date": "2021-03-01", "value": 101}, {"date": "2021-04-01", "value": 100.6}, {"date": "2021-05-01", "value": 100.4}, {"date": "2021-06-01", "value": 100.5}, {"date": "2021-07-01", "value": 100.9}, {"date": "2021-08-01", "value": 100.7}, {"date": "2021-09-01", "value": 100.6}, {"date": "2021-10-01", "value": 101}, {"date": "2021-11-01", "value": 101.3}, {"date": "2021-12-01", "value": 101.7}, {"date": "2022-01-01", "value": 101.1}, {"date": "2022-02-01", "value": 101.2}, {"date": "2022-03-01", "value": 102}, {"date": "2022-04-01", "value": 102.1}, {"date": "2022-05-01", "value": 102.1}, {"date": "2022-06-01", "value": 102.2}, {"date": "2022-07-01", "value": 102.5}, {"date": "2022-08-01", "value": 102.3}, {"date": "2022-09-01", "value": 102.5}, {"date": "2022-10-01", "value": 102.8}, {"date": "2022-11-01", "value": 103}, {"date": "2022-12-01", "value": 103.2}, {"date": "2023-01-01", "value": 102.8}, {"date": "2023-02-01", "value": 103.1}, {"date": "2023-03-01", "value": 103.9}, {"date": "2023-04-01", "value": 104.3}, {"date": "2023-05-01", "value": 104.4}, {"date": "2023-06-01", "value": 104}, {"date": "2023-07-01", "value": 104.7}, {"date": "2023-08-01", "value": 104.8}, {"date": "2023-09-01", "value": 104.9}, {"date": "2023-10-01", "value": 105.6}, {"date": "2023-11-01", "value": 105.9}, {"date": "2023-12-01", "value": 106}, {"date": "2024-01-01", "value": 105.5}, {"date": "2024-02-01", "value": 105.7}, {"date": "2024-03-01", "value": 106.5}, {"date": "2024-04-01", "value": 107.7}, {"date": "2024-05-01", "value": 107.7}, {"date": "2024-06-01", "value": 107.8}, {"date": "2024-07-01", "value": 108.2}, {"date": "2024-08-01", "value": 108.3}, {"date": "2024-09-01", "value": 108.1}, {"date": "2024-10-01", "value": 109.2}, {"date": "2024-11-01", "value": 109.5}, {"date": "2024-12-01", "value": 109.6}, {"date": "2025-01-01", "value": 109.1}, {"date": "2025-02-01", "value": 109.2}, {"date": "2025-03-01", "value": 110.1}, {"date": "2025-04-01", "value": 111}, {"date": "2025-05-01", "value": 111}, {"date": "2025-06-01", "value": 110.8}, {"date": "2025-07-01", "value": 111.1}, {"date": "2025-08-01", "value": 111.3}, {"date": "2025-09-01", "value": 111.4}, {"date": "2025-10-01", "value": 112.2}, {"date": "2025-11-01", "value": 112.5}, {"date": "2025-12-01", "value": 112.5}, {"date": "2026-01-01", "value": 112}, {"date": "2026-02-01", "value": 112.2}, {"date": "2026-03-01", "value": 113.7}, {"date": "2026-04-01", "value": 115}, {"date": "2026-05-01", "value": 115}, {"date": "2026-06-01", "value": 114.6}, {"date": "2026-07-01", "value": 115.1}];
+    if (!pts.length) return;
+    const series = [{ name: '企業向けサービス価格指数（基本分類指数、総平均、2020年=100）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-3-2'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
+      yfmt: v => v.toFixed(1),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 97.0}, {"date": "2015-04-01", "value": 97.5}, {"date": "2015-07-01", "value": 97.7}, {"date": "2015-10-01", "value": 97.9}, {"date": "2016-01-01", "value": 98.2}, {"date": "2016-04-01", "value": 98.1}, {"date": "2016-07-01", "value": 97.9}, {"date": "2016-10-01", "value": 98.0}, {"date": "2017-01-01", "value": 97.9}, {"date": "2017-04-01", "value": 98.0}, {"date": "2017-07-01", "value": 98.3}, {"date": "2017-10-01", "value": 98.2}, {"date": "2018-01-01", "value": 98.3}, {"date": "2018-04-01", "value": 98.0}, {"date": "2018-07-01", "value": 97.8}, {"date": "2018-10-01", "value": 97.8}, {"date": "2019-01-01", "value": 98.5}, {"date": "2019-04-01", "value": 98.5}, {"date": "2019-07-01", "value": 98.5}, {"date": "2019-10-01", "value": 99.5}, {"date": "2020-01-01", "value": 99.7}, {"date": "2020-04-01", "value": 100.1}, {"date": "2020-07-01", "value": 100.0}, {"date": "2020-10-01", "value": 100.1}, {"date": "2021-01-01", "value": 99.8}, {"date": "2021-04-01", "value": 99.9}, {"date": "2021-07-01", "value": 100.0}, {"date": "2021-10-01", "value": 100.0}, {"date": "2022-01-01", "value": 100.3}, {"date": "2022-04-01", "value": 100.0}, {"date": "2022-07-01", "value": 100.1}, {"date": "2022-10-01", "value": 101.8}, {"date": "2023-01-01", "value": 102.9}, {"date": "2023-04-01", "value": 104.8}, {"date": "2023-07-01", "value": 106.2}, {"date": "2023-10-01", "value": 106.8}, {"date": "2024-01-01", "value": 106.4}, {"date": "2024-04-01", "value": 108.6}, {"date": "2024-07-01", "value": 109.1}, {"date": "2024-10-01", "value": 109.9}, {"date": "2025-01-01", "value": 110.3}, {"date": "2025-04-01", "value": 112.1}, {"date": "2025-07-01", "value": 112.9}, {"date": "2025-10-01", "value": 113.7}, {"date": "2026-01-01", "value": 113.9}, {"date": "2026-04-01", "value": 114.9}];
+    if (!pts.length) return;
+    const series = [{ name: 'GDPデフレーター（国内総生産(支出側)、季節調整系列、2020暦年基準）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-3-3'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
       yfmt: v => v.toFixed(1),
       tipfmt: v => v.toLocaleString(),
       endLabel: (s, last) => last.y.toLocaleString(),
@@ -925,7 +1037,20 @@
     if (!pts.length) return;
     const series = [{ name: 'マネーストックM2（平残）', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
     renderLineChart(document.getElementById('sector-chart-4'), series, {
-      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      width: 720, height: 160, padR: 60, padT: 10, padB: 22,
+      labelEvery: Math.max(1, Math.floor(pts.length / 6)),
+      yfmt: v => v.toFixed(0),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    });
+  })();
+  (function () {
+    const pts = [{"date": "2015-01-01", "value": 2753859}, {"date": "2015-02-01", "value": 2752617}, {"date": "2015-03-01", "value": 2821182}, {"date": "2015-04-01", "value": 3003275}, {"date": "2015-05-01", "value": 3043476}, {"date": "2015-06-01", "value": 3130770}, {"date": "2015-07-01", "value": 3228211}, {"date": "2015-08-01", "value": 3229269}, {"date": "2015-09-01", "value": 3321941}, {"date": "2015-10-01", "value": 3388877}, {"date": "2015-11-01", "value": 3437218}, {"date": "2015-12-01", "value": 3463793}, {"date": "2016-01-01", "value": 3551030}, {"date": "2016-02-01", "value": 3550415}, {"date": "2016-03-01", "value": 3626050}, {"date": "2016-04-01", "value": 3808364}, {"date": "2016-05-01", "value": 3818397}, {"date": "2016-06-01", "value": 3927119}, {"date": "2016-07-01", "value": 4024578}, {"date": "2016-08-01", "value": 4009981}, {"date": "2016-09-01", "value": 4075081}, {"date": "2016-10-01", "value": 4138966}, {"date": "2016-11-01", "value": 4176573}, {"date": "2016-12-01", "value": 4263922}, {"date": "2017-01-01", "value": 4352054}, {"date": "2017-02-01", "value": 4309696}, {"date": "2017-03-01", "value": 4362634}, {"date": "2017-04-01", "value": 4562398}, {"date": "2017-05-01", "value": 4559954}, {"date": "2017-06-01", "value": 4594854}, {"date": "2017-07-01", "value": 4650692}, {"date": "2017-08-01", "value": 4663075}, {"date": "2017-09-01", "value": 4711205}, {"date": "2017-10-01", "value": 4738791}, {"date": "2017-11-01", "value": 4725834}, {"date": "2017-12-01", "value": 4741265}, {"date": "2018-01-01", "value": 4772595}, {"date": "2018-02-01", "value": 4716382}, {"date": "2018-03-01", "value": 4759328}, {"date": "2018-04-01", "value": 4920203}, {"date": "2018-05-01", "value": 4929691}, {"date": "2018-06-01", "value": 4933638}, {"date": "2018-07-01", "value": 4976398}, {"date": "2018-08-01", "value": 4983868}, {"date": "2018-09-01", "value": 4988216}, {"date": "2018-10-01", "value": 5016198}, {"date": "2018-11-01", "value": 5013302}, {"date": "2018-12-01", "value": 4970034}, {"date": "2019-01-01", "value": 4997797}, {"date": "2019-02-01", "value": 4930980}, {"date": "2019-03-01", "value": 4942027}, {"date": "2019-04-01", "value": 5073520}, {"date": "2019-05-01", "value": 5108086}, {"date": "2019-06-01", "value": 5129912}, {"date": "2019-07-01", "value": 5160145}, {"date": "2019-08-01", "value": 5125110}, {"date": "2019-09-01", "value": 5138266}, {"date": "2019-10-01", "value": 5171008}, {"date": "2019-11-01", "value": 5176305}, {"date": "2019-12-01", "value": 5127767}, {"date": "2020-01-01", "value": 5141329}, {"date": "2020-02-01", "value": 5106311}, {"date": "2020-03-01", "value": 5078486}, {"date": "2020-04-01", "value": 5189225}, {"date": "2020-05-01", "value": 5308787}, {"date": "2020-06-01", "value": 5440233}, {"date": "2020-07-01", "value": 5667600}, {"date": "2020-08-01", "value": 5715919}, {"date": "2020-09-01", "value": 5871952}, {"date": "2020-10-01", "value": 6012845}, {"date": "2020-11-01", "value": 6029293}, {"date": "2020-12-01", "value": 6065491}, {"date": "2021-01-01", "value": 6114206}, {"date": "2021-02-01", "value": 6106078}, {"date": "2021-03-01", "value": 6133816}, {"date": "2021-04-01", "value": 6448961}, {"date": "2021-05-01", "value": 6499142}, {"date": "2021-06-01", "value": 6480471}, {"date": "2021-07-01", "value": 6541081}, {"date": "2021-08-01", "value": 6569573}, {"date": "2021-09-01", "value": 6557964}, {"date": "2021-10-01", "value": 6607426}, {"date": "2021-11-01", "value": 6590000}, {"date": "2021-12-01", "value": 6570831}, {"date": "2022-01-01", "value": 6627169}, {"date": "2022-02-01", "value": 6571737}, {"date": "2022-03-01", "value": 6621323}, {"date": "2022-04-01", "value": 6874736}, {"date": "2022-05-01", "value": 6800213}, {"date": "2022-06-01", "value": 6734841}, {"date": "2022-07-01", "value": 6722218}, {"date": "2022-08-01", "value": 6597138}, {"date": "2022-09-01", "value": 6341934}, {"date": "2022-10-01", "value": 6152627}, {"date": "2022-11-01", "value": 6168203}, {"date": "2022-12-01", "value": 6172224}, {"date": "2023-01-01", "value": 6376936}, {"date": "2023-02-01", "value": 6464403}, {"date": "2023-03-01", "value": 6557809}, {"date": "2023-04-01", "value": 6759281}, {"date": "2023-05-01", "value": 6727323}, {"date": "2023-06-01", "value": 6669938}, {"date": "2023-07-01", "value": 6633513}, {"date": "2023-08-01", "value": 6674477}, {"date": "2023-09-01", "value": 6698608}, {"date": "2023-10-01", "value": 6706127}, {"date": "2023-11-01", "value": 6715329}, {"date": "2023-12-01", "value": 6654863}, {"date": "2024-01-01", "value": 6680019}, {"date": "2024-02-01", "value": 6616688}, {"date": "2024-03-01", "value": 6662400}, {"date": "2024-04-01", "value": 6898964}, {"date": "2024-05-01", "value": 6788243}, {"date": "2024-06-01", "value": 6711098}, {"date": "2024-07-01", "value": 6701436}, {"date": "2024-08-01", "value": 6711832}, {"date": "2024-09-01", "value": 6694463}, {"date": "2024-10-01", "value": 6688723}, {"date": "2024-11-01", "value": 6697481}, {"date": "2024-12-01", "value": 6585240}, {"date": "2025-01-01", "value": 6511079}, {"date": "2025-02-01", "value": 6499369}, {"date": "2025-03-01", "value": 6458519}, {"date": "2025-04-01", "value": 6569773}, {"date": "2025-05-01", "value": 6560120}, {"date": "2025-06-01", "value": 6479525}, {"date": "2025-07-01", "value": 6438964}, {"date": "2025-08-01", "value": 6437775}, {"date": "2025-09-01", "value": 6281080}, {"date": "2025-10-01", "value": 6165980}, {"date": "2025-11-01", "value": 6126869}, {"date": "2025-12-01", "value": 5941943}, {"date": "2026-01-01", "value": 5894035}, {"date": "2026-02-01", "value": 5809326}, {"date": "2026-03-01", "value": 5707875}, {"date": "2026-04-01", "value": 5829256}, {"date": "2026-05-01", "value": 5757634}, {"date": "2026-06-01", "value": 5592039}, {"date": "2026-07-01", "value": 5549259}];
+    if (!pts.length) return;
+    const series = [{ name: 'マネタリーベース平均残高', color: cssVar('--accent'), points: pts.map(d => ({ y: d.value, label: d.date.slice(2, 7) })) }];
+    renderLineChart(document.getElementById('sector-mini-4-0'), series, {
+      width: 380, height: 130, padR: 40, padT: 8, padB: 20,
+      labelEvery: Math.max(1, Math.floor(pts.length / 4)),
       yfmt: v => v.toFixed(0),
       tipfmt: v => v.toLocaleString(),
       endLabel: (s, last) => last.y.toLocaleString(),

@@ -13,17 +13,24 @@ macro.narrative の LLM 生成結果を組み合わせて、企業非依存の�
 
 from __future__ import annotations
 
+import argparse
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
 
 from .context import _fmt_value, _snapshot_at
 from .narrative import (
+    SECTOR_TAB_KEYS as _TAB_SECTOR_KEY,
+)
+from .narrative import (
     MacroNarrative,
     NarrativeError,
+    SectorNarrative,
     generate_narrative,
+    generate_sector_narratives,
     save_narratives,
+    save_sector_narratives,
 )
 from .store import SeriesData, load_bundle
 
@@ -37,16 +44,10 @@ _TONE_CLASS = {"expand": "expand", "contract": "contract", "neutral": "neutral"}
 _EXAMPLE_INDUSTRY_TERMS = ("乳製品製造業", "市乳処理業", "アイスクリーム製造業", "食料品卸売業", "飼料卸売業")
 _EXAMPLE_COMPANY_LABEL = "森永乳業（乳製品製造業）"
 
-# タブ（5分野）ごとの代表指標（macro/fetch_sectors.py が実際に取得・検証した5系列）。
+# タブ（5分野）ごとの代表指標（macro/fetch_sectors.py が実際に取得・検証した5系列）は
+# macro.narrative.SECTOR_TAB_KEYS と共有（分野解説の生成側と表示側でマッピングを揃えるため）。
 # 各分野の景況推移を一目で示すための代表選定であり、38指標のうち他の33指標は
 # カタログ情報（カード）のみで時系列は今回のスコープ外（TODO.md参照）。
-_TAB_SECTOR_KEY = {
-    "消費・小売": "economy_watchers_di",
-    "企業活動・景況": "corporate_profit_margin",
-    "貿易・生産": "core_machinery_orders",
-    "労働・物価": "unemployment_rate",
-    "不動産・金融": "money_stock_m2",
-}
 
 
 class ReportError(RuntimeError):
@@ -60,6 +61,7 @@ class MacroBundle:
     us: dict[str, SeriesData]
     jp_narrative: MacroNarrative
     us_narrative: MacroNarrative
+    sector_narratives: dict[str, SectorNarrative] = field(default_factory=dict)
 
 
 def load_macro_bundle(*, model: str | None = None) -> MacroBundle:
@@ -83,8 +85,21 @@ def load_macro_bundle(*, model: str | None = None) -> MacroBundle:
     # 個別株評価レポートが LLM を再呼び出しせず引用できるようキャッシュする。
     save_narratives(jp_narrative, us_narrative)
 
+    # 分野解説は sectors.json 未取得でもページ生成全体は止めない（ベストエフォート）。
+    try:
+        sector_narratives = generate_sector_narratives(model=model)
+    except NarrativeError:
+        sector_narratives = {}
+    if sector_narratives:
+        save_sector_narratives(sector_narratives)
+
     return MacroBundle(
-        japan_market=japan_market, overall=overall, us=us, jp_narrative=jp_narrative, us_narrative=us_narrative
+        japan_market=japan_market,
+        overall=overall,
+        us=us,
+        jp_narrative=jp_narrative,
+        us_narrative=us_narrative,
+        sector_narratives=sector_narratives,
     )
 
 
@@ -252,25 +267,78 @@ def _sector_chart_json(series: SeriesData) -> str:
     )
 
 
-def _sector_trend_card_html(tab_index: int, tab_name: str, series: SeriesData | None) -> str:
+def _line_chart_js(
+    svg_id: str,
+    label: str,
+    series: SeriesData,
+    *,
+    width: int,
+    height: int,
+    pad_r: int,
+    pad_t: int,
+    pad_b: int,
+    label_every_divisor: int = 6,
+) -> str:
+    data_json = _sector_chart_json(series)
+    unit = series.unit
+    return f"""
+  (function () {{
+    const pts = {data_json};
+    if (!pts.length) return;
+    const series = [{{ name: {label!r}, color: cssVar('--accent'), points: pts.map(d => ({{ y: d.value, label: d.date.slice(2, 7) }})) }}];
+    renderLineChart(document.getElementById({svg_id!r}), series, {{
+      width: {width}, height: {height}, padR: {pad_r}, padT: {pad_t}, padB: {pad_b},
+      labelEvery: Math.max(1, Math.floor(pts.length / {label_every_divisor})),
+      yfmt: v => v.toFixed({1 if unit == "%" or unit.startswith("指数") else 0}),
+      tipfmt: v => v.toLocaleString(),
+      endLabel: (s, last) => last.y.toLocaleString(),
+    }});
+  }})();"""
+
+
+def _sector_trend_card_html(
+    tab_index: int, tab_name: str, series: SeriesData | None, narrative_body: str = ""
+) -> str:
     if series is None:
         return ""
     svg_id = f"sector-chart-{tab_index}"
+    narrative_html = f'\n          <p class="chart-narrative">{narrative_body}</p>' if narrative_body else ""
     return f"""        <div class="chart-card sector-trend-card">
           <div class="chart-head">
             <span class="chart-title">{tab_name}の景況推移: {series.label}</span>
           </div>
           <div class="chart-wrap"><svg id="{svg_id}" viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet"></svg></div>
-          <p class="chart-foot-note">{_trend_caption(series)} ／ 出典: {series.source}</p>
+          <p class="chart-foot-note">{_trend_caption(series)} ／ 出典: {series.source}</p>{narrative_html}
         </div>"""
 
 
-def _catalog_tabs_html(catalog: dict, sectors: dict[str, SeriesData] | None) -> tuple[str, str, str]:
-    """(タブボタンHTML, タブパネルHTML, セクター推移チャートJS) を返す。"""
+def _sector_mini_chart_html(tab_index: int, mini_index: int, ind: dict, series: SeriesData) -> str:
+    svg_id = f"sector-mini-{tab_index}-{mini_index}"
+    return f"""          <div class="chart-card mini-chart-card">
+            <div class="chart-head"><span class="chart-title">{ind.get('name_ja', series.label)}</span></div>
+            <div class="chart-wrap"><svg id="{svg_id}" viewBox="0 0 380 130" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <p class="chart-foot-note">{_trend_caption(series)} ／ 出典: {series.source}</p>
+          </div>"""
+
+
+def _catalog_tabs_html(
+    catalog: dict,
+    sectors: dict[str, SeriesData] | None,
+    sector_narratives: dict[str, SectorNarrative] | None = None,
+    sectors_extra: dict[str, SeriesData] | None = None,
+) -> tuple[str, str, str]:
+    """(タブボタンHTML, タブパネルHTML, セクター推移チャートJS) を返す。
+
+    タブ内は3階層で表示する: ①代表チャート（5分野固定・LLM解説文付き）
+    ②実データが確認できたその他の指標のミニチャート群（sectors_extra.json）
+    ③まだ実データがない指標のメタデータのみカード（従来通り）。
+    重複表示を避けるため、①②で表示した指標は③のカード一覧から除外する。
+    """
     tabs: list[str] = catalog.get("tabs", [])
     by_tab: dict[str, list[dict]] = {t: [] for t in tabs}
     for ind in catalog.get("indicators", []):
         by_tab.setdefault(ind.get("tab", "その他"), []).append(ind)
+    sectors_extra = sectors_extra or {}
 
     buttons = []
     panels = []
@@ -281,29 +349,40 @@ def _catalog_tabs_html(catalog: dict, sectors: dict[str, SeriesData] | None) -> 
         buttons.append(
             f'<button class="tab-btn{active}" data-tab="cat-tab-{i}">{tab}<span class="tab-count">{len(items)}</span></button>'
         )
-        series = (sectors or {}).get(_TAB_SECTOR_KEY.get(tab, ""))
-        trend_html = _sector_trend_card_html(i, tab, series)
-        cards = "\n".join(_indicator_card_html(ind) for ind in items)
+        primary_key = _TAB_SECTOR_KEY.get(tab, "")
+        series = (sectors or {}).get(primary_key)
+        narrative = (sector_narratives or {}).get(tab)
+        trend_html = _sector_trend_card_html(i, tab, series, narrative.body if narrative else "")
+        if series is not None:
+            chart_js_parts.append(
+                _line_chart_js(f"sector-chart-{i}", series.label, series, width=720, height=160, pad_r=60, pad_t=10, pad_b=22)
+            )
+
+        mini_items = [ind for ind in items if ind.get("key") != primary_key and ind.get("key") in sectors_extra]
+        mini_cards = []
+        for j, ind in enumerate(mini_items):
+            mseries = sectors_extra[ind["key"]]
+            mini_cards.append(_sector_mini_chart_html(i, j, ind, mseries))
+            chart_js_parts.append(
+                _line_chart_js(
+                    f"sector-mini-{i}-{j}", mseries.label, mseries,
+                    width=380, height=130, pad_r=40, pad_t=8, pad_b=20, label_every_divisor=4,
+                )
+            )
+        mini_grid_html = ""
+        if mini_cards:
+            mini_cards_html = "\n".join(mini_cards)
+            mini_grid_html = f'\n        <div class="mini-chart-grid">\n{mini_cards_html}\n        </div>'
+
+        charted_keys = {ind["key"] for ind in mini_items} | ({primary_key} if series is not None else set())
+        remaining_items = [ind for ind in items if ind.get("key") not in charted_keys]
+        cards = "\n".join(_indicator_card_html(ind) for ind in remaining_items)
         panels.append(
             f'      <div class="tab-panel{active}" id="cat-tab-{i}">\n'
-            f"{trend_html}\n"
+            f"{trend_html}"
+            f"{mini_grid_html}\n"
             f'        <div class="ind-grid">\n{cards}\n        </div>\n      </div>'
         )
-        if series is not None:
-            data_json = _sector_chart_json(series)
-            unit = series.unit
-            chart_js_parts.append(f"""
-  (function () {{
-    const pts = {data_json};
-    if (!pts.length) return;
-    const series = [{{ name: {series.label!r}, color: cssVar('--accent'), points: pts.map(d => ({{ y: d.value, label: d.date.slice(2, 7) }})) }}];
-    renderLineChart(document.getElementById('sector-chart-{i}'), series, {{
-      width: 720, height: 160, padR: 60, padT: 10, padB: 22, labelEvery: Math.max(1, Math.floor(pts.length / 6)),
-      yfmt: v => v.toFixed({1 if unit == "%" or unit.startswith("指数") else 0}),
-      tipfmt: v => v.toLocaleString(),
-      endLabel: (s, last) => last.y.toLocaleString(),
-    }});
-  }})();""")
 
     return "\n      ".join(buttons), "\n".join(panels), "".join(chart_js_parts)
 
@@ -384,8 +463,17 @@ def render_html(bundle: MacroBundle) -> str:
         sectors = load_bundle("sectors.json")
     except FileNotFoundError:
         sectors = {}
-    catalog_tab_buttons, catalog_tab_panels, sector_chart_js = _catalog_tabs_html(catalog, sectors)
+    try:
+        sectors_extra = load_bundle("sectors_extra.json")
+    except FileNotFoundError:
+        sectors_extra = {}
+    catalog_tab_buttons, catalog_tab_panels, sector_chart_js = _catalog_tabs_html(
+        catalog, sectors, bundle.sector_narratives, sectors_extra
+    )
     example_html = _example_selection_html()
+    catalog_keys = {ind.get("key") for ind in catalog.get("indicators", [])}
+    sector_charted_count = len((set(sectors) | set(sectors_extra)) & catalog_keys)
+    sector_total_count = len(catalog.get("indicators", []))
 
     return _TEMPLATE.format(
         generated_at=generated_at,
@@ -455,6 +543,8 @@ def render_html(bundle: MacroBundle) -> str:
         catalog_tab_panels=catalog_tab_panels,
         example_html=example_html,
         sector_chart_js=sector_chart_js,
+        sector_charted_count=sector_charted_count,
+        sector_total_count=sector_total_count,
     )
 
 
@@ -566,6 +656,7 @@ _TEMPLATE = """<!doctype html>
   .tooltip .tt-row .tt-key-dot {{ width: 8px; height: 8px; border-radius: 2px; display: inline-block; }}
   .tooltip .tt-v {{ font-weight: 700; font-variant-numeric: tabular-nums; }}
   .chart-foot-note {{ font-size: 0.74rem; color: var(--ink-faint); margin-top: 10px; }}
+  .chart-narrative {{ font-size: 0.82rem; color: var(--ink); line-height: 1.75; margin: 8px 0 0; }}
   .gauge-row {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0 26px; }}
   .gauge-card {{ background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; box-shadow: var(--shadow); }}
   .gauge-top {{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }}
@@ -625,6 +716,11 @@ _TEMPLATE = """<!doctype html>
   .example-lede {{ font-size: 0.8rem; color: var(--ink-muted); margin: 0 0 8px; }}
   .example-list {{ margin: 0; padding-left: 1.2em; font-size: 0.84rem; color: var(--ink); line-height: 1.7; }}
   .sector-trend-card {{ margin-bottom: 16px; }}
+  .mini-chart-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 0 0 14px; }}
+  @media (max-width: 720px) {{ .mini-chart-grid {{ grid-template-columns: 1fr; }} }}
+  .mini-chart-card {{ padding: 14px 16px 12px; margin-bottom: 0; }}
+  .mini-chart-card .chart-title {{ font-size: 0.86rem; }}
+  .mini-chart-card .chart-foot-note {{ font-size: 0.7rem; }}
   .appendix-note {{ font-size: 0.82rem; color: var(--ink-faint); }}
   footer {{ margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }}
   .sources {{ font-size: 0.76rem; color: var(--ink-faint); line-height: 1.8; }}
@@ -753,7 +849,7 @@ _TEMPLATE = """<!doctype html>
 
   <section id="sectors">
     <h2>セクター指標カタログ <span class="h2-sub">38指標・grill-meで調査・カタログ化</span></h2>
-    <p class="section-lede">CI/DI・CFNAI等の全体マクロ指標に加えて、個別株の評価が業種に応じて参照するセクター指標のカタログです。各タブの冒頭には、その分野を代表する指標の実際の時系列推移を掲載し、分野ごとの景況がどう動いているか一目でわかるようにしています（全38指標のうち5分野の代表5指標のみ、他はカード情報のみ）。個別株ページ側では、企業の業種タームからこの中の数指標がLLMにより自動選択されます（下記に実例）。</p>
+    <p class="section-lede">CI/DI・CFNAI等の全体マクロ指標に加えて、個別株の評価が業種に応じて参照するセクター指標のカタログです。各タブの冒頭には、その分野を代表する指標の実際の時系列推移と、その動きが何を意味するかの短い解説（LLM生成）を掲載し、続けて実データが確認できた指標をミニチャートで並べています（全{sector_total_count}指標のうち{sector_charted_count}指標が時系列グラフ化済み、残りはカード情報のみ）。個別株ページ側では、企業の業種タームからこの中の数指標がLLMにより自動選択されます（下記に実例）。</p>
 
     <div class="tabs-block">
       <div class="tab-bar">
@@ -979,8 +1075,6 @@ _TEMPLATE = """<!doctype html>
 
 
 def main() -> None:
-    import argparse
-
     parser = argparse.ArgumentParser(description="マクロ経済モニターページ（HTML）を生成")
     parser.add_argument("--model", default=None, help="読み方・総合見立て生成に使うモデル")
     parser.add_argument("--out", default=None, help="出力先パス（既定: data/macro/report.html）")

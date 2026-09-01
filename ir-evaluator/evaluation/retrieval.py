@@ -55,6 +55,12 @@ _PER_QUERY_K = 6
 _DEFAULT_N_EVIDENCE = 14
 # 同一辞典項目（code）から採用する最大チャンク数（証拠の多様性確保）。
 _MAX_PER_CODE = 3
+
+# 散文クエリ（有報のリスク/MD&A）は辞典（業種別財務指標テーブルが主体）に対して
+# ノイズが混じりやすい。除外はせず、取得件数を絞り最終順位にペナルティを課すことで
+# 業種タームクエリ由来の証拠を優先しつつ、他に候補が無い場合の保険として残す。
+_PROSE_PER_QUERY_K = 3
+_PROSE_DISTANCE_PENALTY = 0.08
 # 有報セクションから補助クエリに回すチャンク数と長さ。
 _QUERY_CHUNK_CHARS = 900
 _MAX_SECTION_QUERIES = 2
@@ -161,6 +167,17 @@ def _dedupe(items: list[str]) -> list[str]:
     return out
 
 
+def _section_chunks(risk_section: str, mda_section: str) -> list[str]:
+    """有報のリスク/MD&Aセクションを、補助クエリ用チャンクに分割する。"""
+    chunks: list[str] = []
+    for section in (risk_section, mda_section):
+        if section:
+            chunks.extend(
+                split_text(section, chunk_size=_QUERY_CHUNK_CHARS)[:_MAX_SECTION_QUERIES]
+            )
+    return chunks
+
+
 def _build_queries(
     terms: list[str],
     profile: CompanyProfile,
@@ -178,11 +195,7 @@ def _build_queries(
     if not terms and profile.business_content:
         queries.append(_clean_business_text(profile.business_content)[:_BUSINESS_QUERY_CHARS])
 
-    for section in (risk_section, mda_section):
-        if section:
-            queries.extend(
-                split_text(section, chunk_size=_QUERY_CHUNK_CHARS)[:_MAX_SECTION_QUERIES]
-            )
+    queries.extend(_section_chunks(risk_section, mda_section))
 
     return _dedupe(queries)
 
@@ -209,22 +222,48 @@ def retrieve_evidence(
     risk_section = _first_section(doc, _RISK_MARKERS)
     mda_section = _first_section(doc, _MDA_MARKERS)
     queries = _build_queries(terms, profile, risk_section, mda_section)
+    prose_queries = set(_section_chunks(risk_section, mda_section))
     where = resolve_filter(profile)
 
     collection = get_collection()
     query_embeddings = embed_texts(queries, task_type="RETRIEVAL_QUERY")
 
-    # chunk id（code-index）→ 最良ヒットで集約する。
-    best: dict[str, Evidence] = {}
+    hits: list[tuple[str, list[str], list[dict], list[float]]] = []
     for query, emb in zip(queries, query_embeddings):
+        k = _PROSE_PER_QUERY_K if query in prose_queries else _PER_QUERY_K
         res = collection.query(
             query_embeddings=[emb],
-            n_results=_PER_QUERY_K,
+            n_results=k,
             where=where or None,
         )
-        for doc_text, meta, dist in zip(
-            res["documents"][0], res["metadatas"][0], res["distances"][0]
-        ):
+        hits.append((query, res["documents"][0], res["metadatas"][0], res["distances"][0]))
+
+    evidence = _select_evidence(hits, prose_queries, n_evidence)
+    return RetrievalResult(
+        evidence=evidence,
+        queries=queries,
+        where=where,
+        industry_label=" / ".join(terms) if terms else (profile.filer_name or ""),
+        risk_section=risk_section,
+        mda_section=mda_section,
+    )
+
+
+def _select_evidence(
+    hits: list[tuple[str, list[str], list[dict], list[float]]],
+    prose_queries: set[str],
+    n_evidence: int,
+) -> list[Evidence]:
+    """クエリ別ヒットを集約し、同一項目の偏りを抑えつつ上位を選ぶ。
+
+    同一チャンクは実際の最小距離で保持する（`Evidence.distance` はレポート表示用に
+    正確な値を残す）。最終順位付けのみ、そのチャンクの最良ヒットが散文クエリ
+    （有報リスク/MD&A）由来なら `_PROSE_DISTANCE_PENALTY` を加えて後ろへ回す。
+    """
+    # chunk id（code-index）→ 最良ヒットで集約する。
+    best: dict[str, Evidence] = {}
+    for query, documents, metadatas, distances in hits:
+        for doc_text, meta, dist in zip(documents, metadatas, distances):
             chunk_id = f"{meta['code']}-{meta.get('chunk_index', 0)}"
             if chunk_id in best and best[chunk_id].distance <= dist:
                 continue
@@ -238,21 +277,18 @@ def retrieve_evidence(
                 matched_query=query,
             )
 
-    # 距離順に採用しつつ、同一項目からの偏りを _MAX_PER_CODE で抑える。
+    def _rank_key(ev: Evidence) -> float:
+        penalty = _PROSE_DISTANCE_PENALTY if ev.matched_query in prose_queries else 0.0
+        return ev.distance + penalty
+
+    # ペナルティ込みの順位で採用しつつ、同一項目からの偏りを _MAX_PER_CODE で抑える。
     per_code: dict[str, int] = {}
     evidence: list[Evidence] = []
-    for ev in sorted(best.values(), key=lambda e: e.distance):
+    for ev in sorted(best.values(), key=_rank_key):
         if per_code.get(ev.code, 0) >= _MAX_PER_CODE:
             continue
         per_code[ev.code] = per_code.get(ev.code, 0) + 1
         evidence.append(ev)
         if len(evidence) >= n_evidence:
             break
-    return RetrievalResult(
-        evidence=evidence,
-        queries=queries,
-        where=where,
-        industry_label=" / ".join(terms) if terms else (profile.filer_name or ""),
-        risk_section=risk_section,
-        mda_section=mda_section,
-    )
+    return evidence

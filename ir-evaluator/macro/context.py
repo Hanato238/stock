@@ -10,6 +10,7 @@ overall.json の時系列から、有報の「決算期末時点の環境」と�
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from datetime import date, timedelta
 
@@ -151,8 +152,6 @@ def build_macro_context(
 
 
 def main() -> None:
-    import argparse
-
     parser = argparse.ArgumentParser(description="マクロ環境サマリブロックを生成")
     parser.add_argument("fiscal_period", help="決算期 YYYY-MM（例: 2025-03）")
     parser.add_argument("--industry", default=None, help="業種キー（任意）")

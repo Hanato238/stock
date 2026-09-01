@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "fetched_at": "2026-08-31T20:01:07.639824+00:00",
+    "fetched_at": "2026-09-01T11:40:14.925331+00:00",
     "series_keys": [
       "economy_watchers_di",
       "corporate_profit_margin",
@@ -185,6 +185,10 @@
         {
           "date": "2026-01-01",
           "value": 8.0
+        },
+        {
+          "date": "2026-04-01",
+          "value": 11.3
         }
       ]
     },

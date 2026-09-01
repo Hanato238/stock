@@ -9,10 +9,13 @@ evaluation.classify.classify_industry() と同じパターン: LLM に業種名�
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
+
+from .store import SeriesData, load_bundle
 
 _CATALOG_PATH = Path(__file__).resolve().parent.parent / "data" / "macro" / "indicator_catalog.json"
 
@@ -93,6 +96,21 @@ def _select_categories(industry_terms: list[str], taxonomy: list[str], *, model:
     return [c for c in categories if isinstance(c, str) and c in valid][:_MAX_CATEGORIES]
 
 
+def load_sector_series() -> dict[str, SeriesData]:
+    """sectors.json（5分野代表）と sectors_extra.json（追加検証済み指標）を統合して返す。
+
+    どちらか一方または両方が未取得でも失敗させない（呼び出し側は指標キーに対応する
+    実データがあれば使う・なければ名称のみで表示する、という補助的な使い方をするため）。
+    """
+    merged: dict[str, SeriesData] = {}
+    for filename in ("sectors.json", "sectors_extra.json"):
+        try:
+            merged.update(load_bundle(filename))
+        except FileNotFoundError:
+            continue
+    return merged
+
+
 def select_indicators(
     industry_terms: list[str],
     *,
@@ -139,8 +157,6 @@ def select_indicators(
 
 
 def main() -> None:
-    import argparse
-
     parser = argparse.ArgumentParser(description="業種タームから関連セクター指標を選択")
     parser.add_argument("terms", nargs="+", help="業種名（複数可、空白区切り）")
     parser.add_argument("--model", default=None)

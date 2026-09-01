@@ -12,7 +12,9 @@ def _no_live_macro_calls(monkeypatch):
     from macro import narrative as macro_narrative
 
     monkeypatch.setattr(macro_narrative, "load_narratives", lambda: None)
+    monkeypatch.setattr(macro_narrative, "load_sector_narratives", lambda: None)
     monkeypatch.setattr(macro_indicators, "select_indicators", lambda *a, **k: [])
+    monkeypatch.setattr(macro_indicators, "load_sector_series", lambda: {})
 
 
 def test_render_markdown_structure(bundle):
@@ -84,3 +86,72 @@ def test_macro_premise_quotes_narrative_and_indicators(monkeypatch, bundle):
     assert "緩やかな拡大局面" in md
     assert "拡大局面が続いている。" in md
     assert "商業動態統計（経済産業省、月次）" in md
+
+
+def test_macro_premise_groups_indicators_by_tab_and_quotes_sector_narrative_once(monkeypatch, bundle):
+    from macro import indicators as macro_indicators
+    from macro import narrative as macro_narrative
+    from macro.narrative import SectorNarrative
+
+    monkeypatch.setattr(macro_narrative, "load_narratives", lambda: None)
+    monkeypatch.setattr(
+        macro_narrative,
+        "load_sector_narratives",
+        lambda: {
+            "消費・小売": SectorNarrative(
+                tab="消費・小売", indicator_key="economy_watchers_di", body="食品支出は堅調に推移。"
+            )
+        },
+    )
+    monkeypatch.setattr(
+        macro_indicators,
+        "select_indicators",
+        lambda terms, **k: [
+            {"name_ja": "家計調査", "publisher": "総務省統計局", "frequency": "月次", "tab": "消費・小売"},
+            {"name_ja": "商業動態統計", "publisher": "経済産業省", "frequency": "月次", "tab": "消費・小売"},
+            {"name_ja": "完全失業率", "publisher": "総務省統計局", "frequency": "月次", "tab": "労働・物価"},
+        ],
+    )
+
+    md = render_markdown(bundle)
+    assert "【消費・小売】" in md
+    assert "【労働・物価】" in md
+    assert md.count("食品支出は堅調に推移。") == 1  # 同一タブの指標が複数でも解説は1回のみ
+    assert "家計調査（総務省統計局、月次）" in md
+    assert "商業動態統計（経済産業省、月次）" in md
+
+
+def test_macro_premise_appends_latest_value_when_sector_series_available(monkeypatch, bundle):
+    from macro import indicators as macro_indicators
+    from macro import narrative as macro_narrative
+    from macro.fred import Observation
+    from macro.store import SeriesData
+
+    monkeypatch.setattr(macro_narrative, "load_narratives", lambda: None)
+    monkeypatch.setattr(
+        macro_indicators,
+        "select_indicators",
+        lambda terms, **k: [
+            {"name_ja": "家計調査", "publisher": "総務省統計局", "frequency": "月次", "tab": "消費・小売", "key": "household_survey"},
+            {"name_ja": "商業動態統計", "publisher": "経済産業省", "frequency": "月次", "tab": "消費・小売", "key": "commerce_dynamics"},
+        ],
+    )
+    monkeypatch.setattr(
+        macro_indicators,
+        "load_sector_series",
+        lambda: {
+            "household_survey": SeriesData(
+                key="household_survey",
+                label="家計調査 消費支出",
+                source="e-Stat:0002070001",
+                frequency="m",
+                unit="円",
+                observations=[Observation(date="2026-06-01", value=290886.0)],
+            )
+        },
+    )
+
+    md = render_markdown(bundle)
+    assert "家計調査（総務省統計局、月次） — 直近290886円（2026-06-01）" in md
+    # 実データがない指標（commerce_dynamics）は名称のみのまま。
+    assert "商業動態統計（経済産業省、月次）\n" in md

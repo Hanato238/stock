@@ -5,6 +5,7 @@ import pytest
 from macro.indicators import (
     IndicatorCatalog,
     IndicatorSelectionError,
+    load_sector_series,
     select_indicators,
 )
 
@@ -117,3 +118,45 @@ def test_catalog_load_real_file():
     assert len(catalog.industry_taxonomy) == 19
     assert len(catalog.indicators) == 38
     assert all("relevant_industries" in i for i in catalog.indicators)
+
+
+def test_catalog_real_file_food_beverage_has_coverage():
+    # 回帰テスト: 「製造業（食品・飲料）」は以前どの指標にも紐付いておらず、
+    # 森永乳業（乳製品製造業）評価時に無関係な「鉱工業指数（鉄鋼業）」が選ばれる
+    # 原因になっていた（TODO.md Phase4.6）。household_survey に追加して解消。
+    catalog = IndicatorCatalog.load()
+    covered = {ind for i in catalog.indicators for ind in i.get("relevant_industries", [])}
+    assert "製造業（食品・飲料）" in covered
+
+
+def test_catalog_real_file_steel_index_not_tagged_general_manufacturing():
+    # 回帰テスト: steel_industry_index（鉱工業指数・鉄鋼業）は鉄鋼業specificな指標であり、
+    # 汎用の「製造業（一般）」タグが付くと食品等の無関係な業種にも波及してしまっていた。
+    catalog = IndicatorCatalog.load()
+    steel = next(i for i in catalog.indicators if i["key"] == "steel_industry_index")
+    assert "製造業（一般）" not in steel["relevant_industries"]
+
+
+def test_load_sector_series_merges_both_bundles(monkeypatch):
+    from macro import indicators as macro_indicators
+
+    def fake_load_bundle(filename):
+        if filename == "sectors.json":
+            return {"economy_watchers_di": "series-a"}
+        if filename == "sectors_extra.json":
+            return {"tokyo_cpi": "series-b"}
+        raise AssertionError(f"unexpected filename: {filename}")
+
+    monkeypatch.setattr(macro_indicators, "load_bundle", fake_load_bundle)
+    merged = load_sector_series()
+    assert merged == {"economy_watchers_di": "series-a", "tokyo_cpi": "series-b"}
+
+
+def test_load_sector_series_tolerates_missing_files(monkeypatch):
+    from macro import indicators as macro_indicators
+
+    def fake_load_bundle(filename):
+        raise FileNotFoundError(filename)
+
+    monkeypatch.setattr(macro_indicators, "load_bundle", fake_load_bundle)
+    assert load_sector_series() == {}

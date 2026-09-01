@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 
 from .estat import EstatClient, estat_month_to_iso
@@ -123,8 +124,6 @@ def fetch_jp_market(
 
 
 def main() -> None:
-    import argparse
-
     from .store import save_bundle
 
     parser = argparse.ArgumentParser(description="日本の市場・景気動向指数を取得（japan_market.json）")
