@@ -31,3 +31,7 @@ ir-evaluator/chroma_backups/
 
 # uv lockfile（再生成可能）
 ir-evaluator/uv.lock
+
+# Claude Code の引き継ぎメモ（/handoff skill が書き、SessionStart hook が読む）
+.claude/handoff.md
+.claude/handoff.prev.md

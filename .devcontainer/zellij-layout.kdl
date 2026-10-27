@@ -8,14 +8,8 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    tab name="claude" {
-        pane command="claude" close_on_exit=true {
-            args "--permission-mode" "auto"
-        }
-    }
-    tab name="agy" {
-        pane command="agy" close_on_exit=true {
-            args "--mode=accept-edits"
-        }
+    // claude / agy は自動で起動しない。必要なときにシェルから起動する。
+    tab name="shell" {
+        pane
     }
 }

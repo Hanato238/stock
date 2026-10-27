@@ -1,0 +1,103 @@
+{
+  "model": "opus",
+  "allowManagedPermissionRulesOnly": true,
+  "allowManagedHooksOnly": true,
+  "allowManagedMcpServersOnly": true,
+  "allowedMcpServers": [
+    {
+      "serverName": "filesystem"
+    },
+    {
+      "serverName": "memory"
+    },
+    {
+      "serverName": "sequential-thinking"
+    },
+    {
+      "serverName": "fetch"
+    },
+    {
+      "serverName": "git"
+    },
+    {
+      "serverName": "github"
+    }
+  ],
+  "enabledMcpjsonServers": [
+    "filesystem",
+    "memory",
+    "sequential-thinking",
+    "fetch",
+    "git",
+    "github"
+  ],
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*credential*)",
+      "Read(**/*secret*)"
+    ],
+    "ask": [
+      "WebFetch",
+      "WebSearch",
+      "mcp__github__issue_write",
+      "mcp__github__add_issue_comment",
+      "mcp__github__update_issue_comment",
+      "mcp__github__sub_issue_write"
+    ],
+    "allow": [
+      "mcp__github__issue_read",
+      "mcp__github__list_issues",
+      "mcp__github__search_issues",
+      "mcp__github__search_repositories"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": false,
+    "allowUnsandboxedCommands": false,
+    "enableWeakerNestedSandbox": true,
+    "excludedCommands": [
+      "orca",
+      "orca *"
+    ],
+    "network": {
+      "strictAllowlist": true,
+      "allowedDomains": []
+    },
+    "filesystem": {
+      "denyRead": [
+        "/workspace/**/.env",
+        "/workspace/**/.env.*",
+        "/workspace/**/*.pem",
+        "/workspace/**/*.key",
+        "/workspace/**/*credential*",
+        "/workspace/**/*secret*"
+      ]
+    },
+    "credentials": {
+      "envVars": [
+        {
+          "name": "GITHUB_MCP_PAT",
+          "mode": "deny"
+        },
+        {
+          "name": "GITHUB_PERSONAL_ACCESS_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "mode": "deny"
+        },
+        {
+          "name": "ANTIGRAVITY_API_KEY",
+          "mode": "deny"
+        }
+      ]
+    }
+  }
+}
